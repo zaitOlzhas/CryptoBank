@@ -1,6 +1,6 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
 
-GET {{CryptoBank_WebApi_HostAddress}}/weatherforecast/
+GET {{CryptoBank_WebApi_HostAddress}}/health/
 Accept: application/json
 
 ###
