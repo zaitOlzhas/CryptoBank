@@ -1,7 +1,9 @@
+using CryptoBank_WebApi.Database;
 using FastEndpoints;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using CryptoBank_WebApi.Features.News.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CryptoBank_WebApi.Features.News.Requests;
 
@@ -19,8 +21,22 @@ public static class GetNews
 
     public class RequestHandler : IRequestHandler<Request, NewsModel[]>
     {
+        private CryptoBank_DbContext _db;
+        public RequestHandler(CryptoBank_DbContext db)
+        {
+            _db = db;
+        }
         public async Task<NewsModel[]> Handle(Request request, CancellationToken cancellationToken) =>
-            await Task.FromResult(NewsModel.GenerateMockNews());
+            await _db.News
+                .Select(x => new NewsModel
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Date = x.Date,
+                    Author = x.Author,
+                    Text = x.Text
+                })
+                .ToArrayAsync(cancellationToken);
         
     }
 }
