@@ -11,18 +11,23 @@ public static class GetNews
 {
     [HttpGet("/news")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request, NewsModel[]>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
     {
-        public override async Task<NewsModel[]> ExecuteAsync(Request request, CancellationToken cancellationToken) =>
-            await mediator.Send(request, cancellationToken);
+        public override async Task<NewsModel[]> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            var request = new GetNewsRequest();
+            var response = await mediator.Send(request, cancellationToken);
+            HttpContext.Response.Headers.Append("Content-Type", "application/json");
+            return response;
+        }
     }
 
-    public record Request(int temp) : IRequest<NewsModel[]>;
+    public record GetNewsRequest : IRequest<NewsModel[]>;
 
     public class RequestHandler(CryptoBank_DbContext dbContext, IConfiguration configuration)
-        : IRequestHandler<Request, NewsModel[]>
+        : IRequestHandler<GetNewsRequest, NewsModel[]>
     {
-        public async Task<NewsModel[]> Handle(Request request, CancellationToken cancellationToken) {
+        public async Task<NewsModel[]> Handle(GetNewsRequest request, CancellationToken cancellationToken) {
             
             int newsLimit = configuration.GetValue<int>("Features:News:NewsLimit");
             
