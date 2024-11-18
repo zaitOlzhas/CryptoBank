@@ -19,15 +19,14 @@ public static class GetNews
 
     public record Request(int temp) : IRequest<NewsModel[]>;
 
-    public class RequestHandler : IRequestHandler<Request, NewsModel[]>
+    public class RequestHandler(CryptoBank_DbContext dbContext, IConfiguration configuration)
+        : IRequestHandler<Request, NewsModel[]>
     {
-        private CryptoBank_DbContext _db;
-        public RequestHandler(CryptoBank_DbContext db)
-        {
-            _db = db;
-        }
-        public async Task<NewsModel[]> Handle(Request request, CancellationToken cancellationToken) =>
-            await _db.News
+        public async Task<NewsModel[]> Handle(Request request, CancellationToken cancellationToken) {
+            
+            int newsLimit = configuration.GetValue<int>("Features:News:NewsLimit");
+            
+            return await dbContext.News
                 .Select(x => new NewsModel
                 {
                     Id = x.Id,
@@ -36,7 +35,9 @@ public static class GetNews
                     Author = x.Author,
                     Text = x.Text
                 })
+                .OrderByDescending(x => x.Date)
+                .Take(newsLimit)
                 .ToArrayAsync(cancellationToken);
-        
+        }
     }
 }
