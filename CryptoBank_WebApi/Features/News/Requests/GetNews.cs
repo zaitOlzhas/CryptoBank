@@ -1,9 +1,11 @@
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.News.Configurations;
 using FastEndpoints;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using CryptoBank_WebApi.Features.News.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CryptoBank_WebApi.Features.News.Requests;
 
@@ -17,20 +19,16 @@ public static class GetNews
         {
             var request = new GetNewsRequest();
             var response = await mediator.Send(request, cancellationToken);
-            HttpContext.Response.Headers.Append("Content-Type", "application/json");
             return response;
         }
     }
 
     public record GetNewsRequest : IRequest<NewsModel[]>;
 
-    public class RequestHandler(CryptoBank_DbContext dbContext, IConfiguration configuration)
+    public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<NewsConfigurations> configs)
         : IRequestHandler<GetNewsRequest, NewsModel[]>
     {
         public async Task<NewsModel[]> Handle(GetNewsRequest request, CancellationToken cancellationToken) {
-            
-            int newsLimit = configuration.GetValue<int>("Features:News:NewsLimit");
-            
             return await dbContext.News
                 .Select(x => new NewsModel
                 {
@@ -41,7 +39,7 @@ public static class GetNews
                     Text = x.Text
                 })
                 .OrderByDescending(x => x.Date)
-                .Take(newsLimit)
+                .Take(configs.Value.NewsLimit)
                 .ToArrayAsync(cancellationToken);
         }
     }

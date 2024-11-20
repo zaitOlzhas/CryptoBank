@@ -1,5 +1,6 @@
 using System.Reflection;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.News.Configurations;
 using CryptoBank_WebApi.Pipeline;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,7 @@ builder.Services.AddDbContext<CryptoBank_DbContext>(options =>
 builder.Services.AddSingleton<Dispatcher>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 builder.Services.AddFastEndpoints();
-
+builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
