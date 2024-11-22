@@ -1,3 +1,5 @@
+using CryptoBank_WebApi.Common.Extensions;
+using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -25,9 +27,9 @@ public class SignUp
         }
     }
 
-    public record Request(string Email, string Password) : IRequest<EmptyResponse>;
+    public record Request(string Email, string Password, DateOnly DateOfBirth) : IRequest<EmptyResponse>;
     public record EmptyResponse();
-    public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs)
+    public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs, Argon2IdPasswordHasher passwordHasher)
         : IRequestHandler<Request, EmptyResponse>
     {
         private readonly AuthConfigurations _authConfigs = authConfigs.Value;
@@ -35,32 +37,26 @@ public class SignUp
         public async Task<EmptyResponse> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users
-                .Where(x => x.Email == request.Email)
-                .Select(x => new UserModel
-                    {
-                        Id = x.Id,
-                        Email = x.Email,
-                        Role = x.Role,
-                    }
-                )
-                .FirstOrDefaultAsync(cancellationToken);
+                .Where(x => x.Email == request.Email.ToLower())
+                .AnyAsync();
             
-            if (user != null)
+            if (user)
                 throw new Exception("This email is already in use!");
             //TODO: Add http code 409 for conflict emails
-            
-            var role = _authConfigs.Admin.Email.Equals(request.Email) ? UserRole.Administrator : UserRole.User;
+            var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) ? UserRole.Administrator : UserRole.User;
             var userEntity = new User
             {
-                Email = request.Email,
-                Password = request.Password,
+                Email = request.Email.ToLower(),
+                Password = passwordHasher.HashPassword(request.Password),
+                DateOfBirth = request.DateOfBirth,
+                RegistrationDate = DateTime.Now.SetKindUtc(),
                 Role = role.ToString()
             };
             
             await dbContext.Users.AddAsync(userEntity, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             
-            return await Task.FromResult(new EmptyResponse());
+            return new EmptyResponse();
         }
     }
 }

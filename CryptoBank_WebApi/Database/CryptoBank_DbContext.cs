@@ -54,6 +54,18 @@ public class CryptoBank_DbContext : DbContext
 
             user.Property(x => x.Role)
                 .IsRequired();
+            
+            user.Property(x => x.DateOfBirth)
+                .IsRequired();
+            
+            user.Property(x => x.RegistrationDate)
+                .IsRequired();
+            
+            user.Property(x => x.FirstName)
+                .IsRequired();
+            
+            user.Property(x => x.LastName)
+                .IsRequired();
         });
     }
 }

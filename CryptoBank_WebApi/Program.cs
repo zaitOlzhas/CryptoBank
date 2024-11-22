@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Authorization.Requirements;
+using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -30,8 +31,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtOptions.Issuer,
         ValidAudience = jwtOptions.Audience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey)),
-        RoleClaimType = "role",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey))
     };
 });
 builder.Services.AddSingleton<IAuthorizationHandler, RoleRequirementHandler>();
@@ -48,6 +48,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.Get
 builder.Services.AddFastEndpoints();
 builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 builder.Services.Configure<AuthConfigurations>(builder.Configuration.GetSection("Features:Auth"));
+builder.Services.AddTransient<Argon2IdPasswordHasher>();
+builder.Services.Configure<Argon2IdOptions>(builder.Configuration.GetSection("Common:Passwords:Argon2Id"));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

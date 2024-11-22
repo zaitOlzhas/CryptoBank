@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -31,26 +32,30 @@ public class Authenticate
     {
         private readonly CryptoBank_DbContext _dbContext;
         private readonly AuthConfigurations _authConfigs;
+        private readonly Argon2IdPasswordHasher _paswordHasher;
 
-        public RequestHandler(CryptoBank_DbContext dbContext,IOptions<AuthConfigurations> authConfigs)
+        public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs, Argon2IdPasswordHasher paswordHasher)
         {
             _dbContext = dbContext;
             _authConfigs = authConfigs.Value;
+            _paswordHasher = paswordHasher;
         }
 
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
-                .Where(x => x.Email == request.Email && x.Password == request.Password)
+                .Where(x => x.Email == request.Email.ToLower() && x.Password == _paswordHasher.HashPassword(request.Password))
                 .Select(x => new UserModel
                     {
                         Id = x.Id,
                         Email = x.Email,
-                        Password = x.Password,
                         Role = x.Role,
                     }
                 )
                 .FirstOrDefaultAsync(cancellationToken);
+            
+           if(user is null)
+               throw new Exception("Invalid credentials");
            
            var jwt  = user switch
            {
@@ -59,18 +64,19 @@ public class Authenticate
                {Role: "Administrator"} => GenerateJwt(user.Email, new [] {UserRole.Administrator}),
                _ => throw new Exception("Invalid user role in DB.")
            };
-           return await Task.FromResult(new Response(jwt));
+           return new Response(jwt);
         }
         private string GenerateJwt(string email, UserRole[] roles, int? rank = null)
         {
+            //TODO: User custom claims
             var claims = new List<Claim>
             {
-                new("email", email),
+                new(ClaimTypes.Email, email),
             };
 
             foreach (var role in roles)
             {
-                claims.Add(new("role", role.ToString()));
+                claims.Add(new(ClaimTypes.Role, role.ToString()));
             }
             
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authConfigs.Jwt.SigningKey));
