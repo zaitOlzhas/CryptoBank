@@ -1,6 +1,15 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
 
-GET {{CryptoBank_WebApi_HostAddress}}/news/
+GET {{CryptoBank_WebApi_HostAddress}}/usernews/
 Accept: application/json
-
 ###
+GET {{CryptoBank_WebApi_HostAddress}}/adminnews/
+Accept: application/json
+###
+GET {{CryptoBank_WebApi_HostAddress}}/allnews/
+Accept: application/json
+###
+POST {{CryptoBank_WebApi_HostAddress}}/auth/
+Content-Type: application/json
+Cookie: key=first-value
+{"Email": "123@123.com","Password": "123"}
