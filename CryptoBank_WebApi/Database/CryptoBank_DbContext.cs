@@ -62,10 +62,10 @@ public class CryptoBank_DbContext : DbContext
                 .IsRequired();
             
             user.Property(x => x.FirstName)
-                .IsRequired();
+                .IsRequired(false);
             
             user.Property(x => x.LastName)
-                .IsRequired();
+                .IsRequired(false);
         });
     }
 }
