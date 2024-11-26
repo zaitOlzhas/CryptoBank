@@ -58,7 +58,7 @@ public class Authenticate
            if(user is null)
                throw new Exception("Invalid credentials");
            
-           if(!_paswordHasher.VerifyHashedPassword(request.Password, user.Password))
+           if(!_paswordHasher.VerifyHashedPassword(user.Password,request.Password))
                   throw new Exception("Invalid credentials");
            
            var jwt  = user switch
