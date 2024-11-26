@@ -44,18 +44,22 @@ public class Authenticate
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await _dbContext.Users
-                .Where(x => x.Email == request.Email.ToLower() && x.Password == _paswordHasher.HashPassword(request.Password))
+                .Where(x => x.Email == request.Email.ToLower())
                 .Select(x => new UserModel
                     {
                         Id = x.Id,
                         Email = x.Email,
                         Role = x.Role,
+                        Password = x.Password
                     }
                 )
                 .FirstOrDefaultAsync(cancellationToken);
             
            if(user is null)
                throw new Exception("Invalid credentials");
+           
+           if(!_paswordHasher.VerifyHashedPassword(request.Password, user.Password))
+                  throw new Exception("Invalid credentials");
            
            var jwt  = user switch
            {
