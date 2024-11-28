@@ -1,3 +1,4 @@
+using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.News.Configurations;
 using FastEndpoints;
@@ -11,9 +12,31 @@ namespace CryptoBank_WebApi.Features.News.Requests;
 
 public static class GetNews
 {
-    [HttpGet("/news")]
-    [AllowAnonymous]
+    [HttpGet("/usernews")]
+    [Authorize(Policy = PolicyNames.UserRole)]
     public class Endpoint(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
+    {
+        public override async Task<NewsModel[]> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            var request = new GetNewsRequest();
+            var response = await mediator.Send(request, cancellationToken);
+            return response;
+        }
+    }
+    [HttpGet("/adminnews")]
+    [Authorize(Policy = PolicyNames.AdministratorRole)]
+    public class Endpoint2(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
+    {
+        public override async Task<NewsModel[]> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            var request = new GetNewsRequest();
+            var response = await mediator.Send(request, cancellationToken);
+            return response;
+        }
+    }
+    [HttpGet("/allnews")]
+    [AllowAnonymous]
+    public class Endpoint3(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
     {
         public override async Task<NewsModel[]> ExecuteAsync(CancellationToken cancellationToken)
         {

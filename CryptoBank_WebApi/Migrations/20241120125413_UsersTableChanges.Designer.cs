@@ -3,6 +3,7 @@ using System;
 using CryptoBank_WebApi.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CryptoBank_WebApi.Migrations
 {
     [DbContext(typeof(CryptoBank_DbContext))]
-    partial class CryptoBank_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241120125413_UsersTableChanges")]
+    partial class UsersTableChanges
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,7 +34,6 @@ namespace CryptoBank_WebApi.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<DateOnly?>("DateOfBirth")
-                        .IsRequired()
                         .HasColumnType("date");
 
                     b.Property<string>("Email")
@@ -49,7 +51,6 @@ namespace CryptoBank_WebApi.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("RegistrationDate")
-                        .IsRequired()
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Role")
