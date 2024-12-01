@@ -76,10 +76,10 @@ public class CryptoBank_DbContext : DbContext
                 .IsRequired();
             
             user.Property(x => x.DateOfBirth)
-                .IsRequired();
+                .IsRequired(false);
             
             user.Property(x => x.RegistrationDate)
-                .IsRequired();
+                .IsRequired(true);
             
             user.Property(x => x.FirstName)
                 .IsRequired(false);
