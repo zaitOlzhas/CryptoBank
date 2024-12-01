@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
@@ -35,13 +36,15 @@ public class Authenticate
         private readonly CryptoBank_DbContext _dbContext;
         private readonly AuthConfigurations _authConfigs;
         private readonly Argon2IdPasswordHasher _paswordHasher;
+        private readonly JwtTokenGenerator _jwtTokenGenerator;
 
         public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs,
-            Argon2IdPasswordHasher paswordHasher)
+            Argon2IdPasswordHasher paswordHasher, JwtTokenGenerator jwtTokenGenerator)
         {
             _dbContext = dbContext;
             _authConfigs = authConfigs.Value;
             _paswordHasher = paswordHasher;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -66,68 +69,15 @@ public class Authenticate
 
             var jwt = user switch
             {
-                { Role: "User" } => GenerateJwt(user.Email, new[] { UserRole.User }),
-                { Role: "Analyst" } => GenerateJwt(user.Email, new[] { UserRole.Analyst }),
-                { Role: "Administrator" } => GenerateJwt(user.Email, new[] { UserRole.Administrator, UserRole.User }),
+                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.User }),
+                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Analyst }),
+                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Administrator, UserRole.User }),
                 _ => throw new Exception("Invalid user role in DB.")
             };
             
-            var refreshToken = await GenerateRefreshToken(user.Id, cancellationToken);
+            var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
 
             return new Response(new AuthToken { AccessToken = jwt, RefreshToken = refreshToken.Token });
-        }
-
-        private async Task<UserRefreshToken> GenerateRefreshToken(int userId, CancellationToken cancellationToken)
-        {
-            var user = await _dbContext.Users.FindAsync(new object[] { userId }, cancellationToken);
-            var refreshToken = "";
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                var randomNumber = new byte[32];
-                rng.GetBytes(randomNumber);
-                refreshToken =Convert.ToBase64String(randomNumber); 
-            }
-            var refreshTokenRecord = new UserRefreshToken
-            {
-                Token = refreshToken,
-                ExpiryDate = DateTime.UtcNow + _authConfigs.Jwt.RefreshTokenExpiration,
-                UserId = user.Id
-            };
-            
-            var oldTokens = await _dbContext.UserRefreshTokens.Where(x => x.UserId == user.Id).ToListAsync(cancellationToken);
-            _dbContext.UserRefreshTokens.RemoveRange(oldTokens);
-            
-            await _dbContext.UserRefreshTokens.AddAsync(refreshTokenRecord, cancellationToken);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-            return refreshTokenRecord;
-        }
-
-        private string GenerateJwt(string email, UserRole[] roles)
-        {
-            //TODO: User custom claims
-            var claims = new List<Claim>
-            {
-                new(ClaimTypes.Email, email),
-            };
-
-            foreach (var role in roles)
-            {
-                claims.Add(new(ClaimTypes.Role, role.ToString()));
-            }
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authConfigs.Jwt.SigningKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now + _authConfigs.Jwt.Expiration;
-
-            var token = new JwtSecurityToken(
-                _authConfigs.Jwt.Issuer,
-                _authConfigs.Jwt.Audience,
-                claims,
-                expires: expires,
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

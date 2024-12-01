@@ -5,6 +5,7 @@ using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Authorization.Requirements;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.News.Configurations;
@@ -49,6 +50,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 builder.Services.Configure<AuthConfigurations>(builder.Configuration.GetSection("Features:Auth"));
 builder.Services.AddTransient<Argon2IdPasswordHasher>();
+builder.Services.AddTransient<JwtTokenGenerator>();
 builder.Services.Configure<Argon2IdOptions>(builder.Configuration.GetSection("Common:Passwords:Argon2Id"));
 var app = builder.Build();
 
