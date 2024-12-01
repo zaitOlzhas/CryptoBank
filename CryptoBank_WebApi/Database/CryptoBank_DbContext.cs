@@ -36,9 +36,8 @@ public class CryptoBank_DbContext : DbContext
             userRefreshToken.Property(x => x.ExpiryDate)
                 .IsRequired();
 
-            userRefreshToken.HasOne(x => x.User)
-                .WithMany()
-                .HasForeignKey(x => x.Id);
+            userRefreshToken.Property(x => x.UserId)
+                .IsRequired();
         });
     }
 
