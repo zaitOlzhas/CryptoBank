@@ -24,20 +24,21 @@ public class RefreshToken
             await mediator.Send(request,cancellationToken);
     }
 
-    public record Request(AuthToken Token) : IRequest<Response>;
-    public record Response(AuthToken Token);
+    public record Request(string jwt) : IRequest<Response>;
+    public record Response(string jwt);
 
-    public class RequestHandler(CryptoBank_DbContext dbContext, JwtTokenGenerator jwtTokenGenerator) : IRequestHandler<Request, Response>
+    public class RequestHandler(CryptoBank_DbContext dbContext, JwtTokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
+            var refreshToken = httpContextAccessor.HttpContext.Request.Cookies["RefreshToken"];
             var dbToken = await dbContext.UserRefreshTokens
-                .Where(x => x.Token == request.Token.RefreshToken)
+                .Where(x => x.Token == refreshToken)
                 .FirstOrDefaultAsync(cancellationToken);
             if (dbToken is null)
                 throw new Exception("Invalid refresh token");
 
-            var principal = jwtTokenGenerator.GetPrincipalFromExpiredToken(request.Token.AccessToken);
+            var principal = jwtTokenGenerator.GetPrincipalFromExpiredToken(request.jwt);
 
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email) ||
                 !principal.HasClaim(x => x.Type == ClaimTypes.Role))
@@ -52,11 +53,15 @@ public class RefreshToken
 
             var newRefreshToken = await jwtTokenGenerator.GenerateRefreshToken(dbToken.UserId, cancellationToken);
 
-            return new Response(new AuthToken
+            httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", newRefreshToken.Token, new CookieOptions
             {
-                AccessToken = newToken,
-                RefreshToken = newRefreshToken.Token
+                HttpOnly = true,
+                Secure = true, // Set to true if using HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             });
+            
+            return new Response(newToken);
         }
     }
 }

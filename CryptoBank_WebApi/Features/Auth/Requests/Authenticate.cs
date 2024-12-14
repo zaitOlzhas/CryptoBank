@@ -29,7 +29,7 @@ public class Authenticate
 
     public record Request(string Email, string Password) : IRequest<Response>;
 
-    public record Response(AuthToken Token);
+    public record Response(string jwt);
 
     public class RequestHandler : IRequestHandler<Request, Response>
     {
@@ -37,14 +37,16 @@ public class Authenticate
         private readonly AuthConfigurations _authConfigs;
         private readonly Argon2IdPasswordHasher _paswordHasher;
         private readonly JwtTokenGenerator _jwtTokenGenerator;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs,
-            Argon2IdPasswordHasher paswordHasher, JwtTokenGenerator jwtTokenGenerator)
+            Argon2IdPasswordHasher paswordHasher, JwtTokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _authConfigs = authConfigs.Value;
             _paswordHasher = paswordHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -76,8 +78,16 @@ public class Authenticate
             };
             
             var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
+            
+            _httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", refreshToken.Token, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Set to true if using HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.Add(_authConfigs.Jwt.RefreshTokenExpiration)
+            });
 
-            return new Response(new AuthToken { AccessToken = jwt, RefreshToken = refreshToken.Token });
+            return new Response(jwt);
         }
     }
 }
