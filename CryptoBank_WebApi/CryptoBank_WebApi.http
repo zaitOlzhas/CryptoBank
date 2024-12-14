@@ -1,15 +1,45 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
+@AccessToken = your_access_token_here
+@RefreshToken = your_refresh_token_here
 
+### UserNews
 GET {{CryptoBank_WebApi_HostAddress}}/usernews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+### AdminNews
 GET {{CryptoBank_WebApi_HostAddress}}/adminnews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+### AllNews
 GET {{CryptoBank_WebApi_HostAddress}}/allnews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+### Auth
 POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
-Cookie: key=first-value
-{"Email": "123@123.com","Password": "123"}
+
+{
+  "Email": "user1@admin.com",
+  "Password": "123"
+}
+
+### SignUp
+POST {{CryptoBank_WebApi_HostAddress}}/signup/
+Content-Type: application/json
+
+{
+  "Email": "newuser2@admin.com",
+  "Password": "123",
+  "FirstName": "John",
+  "LastName": "Doe"
+}
+
+### RefreshToken
+POST {{CryptoBank_WebApi_HostAddress}}/refresh-token/
+Content-Type: application/json
+Cookie: RefreshToken={{RefreshToken}}
+
+
