@@ -31,7 +31,7 @@ public class RefreshToken
     public record Request() : IRequest<Response>;
     public record Response(string jwt);
 
-    public class RequestHandler(CryptoBank_DbContext dbContext, JwtTokenGenerator jwtTokenGenerator, 
+    public class RequestHandler(CryptoBank_DbContext dbContext, TokenGenerator jwtTokenGenerator, 
         IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
         : IRequestHandler<Request, Response>
     {
