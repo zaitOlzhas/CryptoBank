@@ -30,8 +30,7 @@ public class CryptoBank_DbContext : DbContext
         {
             userRefreshToken.HasKey(x => x.Id);
 
-            userRefreshToken.Property(x => x.Token)
-                .IsRequired();
+            userRefreshToken.HasIndex(x => x.Token);
 
             userRefreshToken.Property(x => x.ExpiryDate)
                 .IsRequired();
