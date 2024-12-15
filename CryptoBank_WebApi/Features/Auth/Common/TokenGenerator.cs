@@ -11,11 +11,11 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace CryptoBank_WebApi.Features.Auth.Common;
 
-public class JwtTokenGenerator
+public class TokenGenerator
 {
     private readonly AuthConfigurations _authConfigs;
     private readonly CryptoBank_DbContext _dbContext;
-    public JwtTokenGenerator(IOptions<AuthConfigurations> authConfigs, CryptoBank_DbContext dbContext)
+    public TokenGenerator(IOptions<AuthConfigurations> authConfigs, CryptoBank_DbContext dbContext)
     {
         _authConfigs = authConfigs.Value;
         _dbContext = dbContext;

@@ -36,11 +36,11 @@ public class Authenticate
         private readonly CryptoBank_DbContext _dbContext;
         private readonly AuthConfigurations _authConfigs;
         private readonly Argon2IdPasswordHasher _paswordHasher;
-        private readonly JwtTokenGenerator _jwtTokenGenerator;
+        private readonly TokenGenerator _jwtTokenGenerator;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs,
-            Argon2IdPasswordHasher paswordHasher, JwtTokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor)
+            Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _authConfigs = authConfigs.Value;

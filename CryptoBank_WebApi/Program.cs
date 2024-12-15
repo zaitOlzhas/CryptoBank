@@ -50,7 +50,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 builder.Services.Configure<AuthConfigurations>(builder.Configuration.GetSection("Features:Auth"));
 builder.Services.AddTransient<Argon2IdPasswordHasher>();
-builder.Services.AddTransient<JwtTokenGenerator>();
+builder.Services.AddTransient<TokenGenerator>();
 builder.Services.Configure<Argon2IdOptions>(builder.Configuration.GetSection("Common:Passwords:Argon2Id"));
 var app = builder.Build();
 
