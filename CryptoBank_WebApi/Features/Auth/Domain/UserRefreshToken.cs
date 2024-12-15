@@ -1,9 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CryptoBank_WebApi.Features.Auth.Domain;
 
 public class UserRefreshToken
 {
     public int Id { get; set; }
-    public string Token { get; set; }
-    public DateTime ExpiryDate { get; set; }
-    public int UserId { get; set; }
+    [Required]
+    public string Token { get; init; }
+    [Required]
+    public DateTime ExpiryDate { get; init; }
+    [Required]
+    public int UserId { get; init; }
 }
