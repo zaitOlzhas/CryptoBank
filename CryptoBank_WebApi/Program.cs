@@ -41,7 +41,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(PolicyNames.UserRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.User)));
     options.AddPolicy(PolicyNames.AnalystRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Analyst)));
-    options.AddPolicy(PolicyNames.AdministratorRole,policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
+    options.AddPolicy(PolicyNames.AdministratorRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
 });
 
 builder.Services.AddSingleton<Dispatcher>();

@@ -61,7 +61,7 @@ public class Authenticate
                         Password = x.Password
                     }
                 )
-                .FirstOrDefaultAsync(cancellationToken);
+                .SingleOrDefaultAsync(cancellationToken);
 
             if (user is null)
                 throw new Exception("Invalid credentials");
