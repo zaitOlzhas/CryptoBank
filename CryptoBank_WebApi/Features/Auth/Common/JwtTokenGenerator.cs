@@ -20,29 +20,32 @@ public class JwtTokenGenerator
         _authConfigs = authConfigs.Value;
         _dbContext = dbContext;
     }
+
     public async Task<UserRefreshToken> GenerateRefreshToken(int userId, CancellationToken cancellationToken)
     {
         var refreshToken = "";
-        using (var rng = RandomNumberGenerator.Create())
-        {
-            var randomNumber = new byte[32];
-            rng.GetBytes(randomNumber);
-            refreshToken =Convert.ToBase64String(randomNumber); 
-        }
+        using var rng = RandomNumberGenerator.Create();
+
+        var randomNumber = new byte[32];
+        rng.GetBytes(randomNumber);
+        refreshToken = Convert.ToBase64String(randomNumber);
+
         var refreshTokenRecord = new UserRefreshToken
         {
             Token = refreshToken,
             ExpiryDate = DateTime.UtcNow + _authConfigs.Jwt.RefreshTokenExpiration,
             UserId = userId
         };
-            
-        var oldTokens = await _dbContext.UserRefreshTokens.Where(x => x.UserId == userId).ToListAsync(cancellationToken);
+
+        var oldTokens = await _dbContext.UserRefreshTokens.Where(x => x.UserId == userId)
+            .ToListAsync(cancellationToken);
         _dbContext.UserRefreshTokens.RemoveRange(oldTokens);
-            
+
         await _dbContext.UserRefreshTokens.AddAsync(refreshTokenRecord, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
         return refreshTokenRecord;
     }
+
     public string GenerateJwt(string email, UserRole[] roles)
     {
         //TODO: User custom claims
@@ -70,6 +73,7 @@ public class JwtTokenGenerator
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+    
     public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
     {
         var tokenValidationParameters = new TokenValidationParameters

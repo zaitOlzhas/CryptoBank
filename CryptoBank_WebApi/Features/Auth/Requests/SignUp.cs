@@ -16,7 +16,7 @@ public class SignUp
 {
     [HttpPost("/signup")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request,EmptyResponse>
+    public class Endpoint(IMediator mediator) : Endpoint<Request, EmptyResponse>
     {
         public override async Task<EmptyResponse> ExecuteAsync(Request request, CancellationToken cancellationToken)
         {

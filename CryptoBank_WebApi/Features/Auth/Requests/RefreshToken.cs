@@ -16,36 +16,42 @@ namespace CryptoBank_WebApi.Features.Auth.Requests;
 
 public class RefreshToken
 {
-    [HttpPost("/refresh-token")]
+    [HttpGet("/refresh-token")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request,Response>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
     {
-        public override async Task<Response> ExecuteAsync(Request request,CancellationToken cancellationToken) =>
-            await mediator.Send(request,cancellationToken);
+        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
+        {
+            var request = new Request();
+            var response = await mediator.Send(request, cancellationToken);
+            return response;
+        }
     }
 
-    public record Request(string jwt) : IRequest<Response>;
+    public record Request() : IRequest<Response>;
     public record Response(string jwt);
 
-    public class RequestHandler(CryptoBank_DbContext dbContext, JwtTokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) : IRequestHandler<Request, Response>
+    public class RequestHandler(CryptoBank_DbContext dbContext, JwtTokenGenerator jwtTokenGenerator, 
+        IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
+        : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
             var refreshToken = httpContextAccessor.HttpContext.Request.Cookies["RefreshToken"];
             var dbToken = await dbContext.UserRefreshTokens
                 .Where(x => x.Token == refreshToken)
-                .FirstOrDefaultAsync(cancellationToken);
+                .SingleOrDefaultAsync(cancellationToken);
             if (dbToken is null)
                 throw new Exception("Invalid refresh token");
 
-            var principal = jwtTokenGenerator.GetPrincipalFromExpiredToken(request.jwt);
+            var principal = httpContextAccessor.HttpContext.User;
 
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email) ||
                 !principal.HasClaim(x => x.Type == ClaimTypes.Role))
                 throw new Exception("Invalid auth token");
 
             var claims = principal.Claims.ToList();
-            var email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var roles = claims.Where(x => x.Type == ClaimTypes.Role).Select(x => Enum.Parse<UserRole>(x.Value))
                 .ToArray();
 
@@ -60,7 +66,7 @@ public class RefreshToken
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             });
-            
+
             return new Response(newToken);
         }
     }
