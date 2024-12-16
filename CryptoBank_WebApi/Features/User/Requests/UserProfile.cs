@@ -27,7 +27,7 @@ public class UserProfile
             return response;
         }
     }
-
+    
     public record Request() : IRequest<Response>;
     public record Response(UserModel userProfile);
     public class RequestHandler(CryptoBank_DbContext dbContext, IHttpContextAccessor httpContextAccessor)
