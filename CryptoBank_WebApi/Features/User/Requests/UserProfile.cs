@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
@@ -16,25 +17,32 @@ namespace CryptoBank_WebApi.Features.User.Requests;
 public class UserProfile
 {
     [HttpGet("/user-profile")]
-    [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request,Response>
+    [Authorize]
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
     {
-        public override async Task<Response> ExecuteAsync(Request request, CancellationToken cancellationToken)
+        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
+            var request = new Request();
             var response = await mediator.Send(request, cancellationToken);
             return response;
         }
     }
 
-    public record Request(string Email) : IRequest<Response>;
+    public record Request() : IRequest<Response>;
     public record Response(UserModel userProfile);
-    public class RequestHandler(CryptoBank_DbContext dbContext)
-        : IRequestHandler<Request, Response>
+    public class RequestHandler(CryptoBank_DbContext dbContext, IHttpContextAccessor httpContextAccessor)
+        : IRequestHandler<Request ,Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
+            var principal = httpContextAccessor.HttpContext.User;
+            if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
+            {
+                throw new Exception("Invalid auth token");
+            }
+            var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var user = await dbContext.Users
-                .Where(x => x.Email == request.Email.ToLower())
+                .Where(x => x.Email == email.ToLower())
                 .Select(x => new UserModel
                     {
                         Id = x.Id,
@@ -42,14 +50,14 @@ public class UserProfile
                         Role = x.Role,
                         DateOfBirth = x.DateOfBirth,
                         RegistrationDate = x.RegistrationDate,
-                        FirstName = x.FirstName,
-                        LastName = x.LastName
+                        FirstName = x.FirstName!,
+                        LastName = x.LastName!
                     }
-                ).FirstOrDefaultAsync(cancellationToken);
-            
+                ).SingleOrDefaultAsync(cancellationToken);
+
             if (user is null)
                 throw new Exception("User not found");
-            
+
             return new Response(user);
         }
     }

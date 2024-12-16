@@ -67,6 +67,10 @@ Cookie: RefreshToken={{RefreshToken}}
     client.global.set("refreshToken", response.headers['Set-Cookie']);
 %}
 
-###
+### UserProfile
+GET {{CryptoBank_WebApi_HostAddress}}/user-profile/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
 
 
