@@ -1,6 +1,6 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
 @AccessToken = {{jwt}}
-@RefreshToken = {{refreshToken}}
+@RefreshTokenCookie = {{refreshToken}}
 
 ### SignUp
 POST {{CryptoBank_WebApi_HostAddress}}/signup/
@@ -51,20 +51,21 @@ Content-Type: application/json
     console.log(response.body);
     client.global.set("jwt", response.body.jwt);
     console.log(response.headers);
-    client.global.set("refreshToken", response.headers['Set-Cookie']);
+    console.log(response.headers.valueOf('Set-Cookie'));
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
 ### RefreshToken
 GET {{CryptoBank_WebApi_HostAddress}}/refresh-token/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
-Cookie: RefreshToken={{RefreshToken}}
+Cookie: {{RefreshTokenCookie}}
 
 > {%
     console.log(response.body);
     client.global.set("jwt", response.body.jwt);
     console.log(response.headers);
-    client.global.set("refreshToken", response.headers['Set-Cookie']);
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
 ###

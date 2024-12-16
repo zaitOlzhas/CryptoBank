@@ -21,32 +21,41 @@ public class Authenticate
 {
     [HttpPost("/auth")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request, Response>
+    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
+        : Endpoint<Request, EndpointResponse>
     {
-        public override async Task<Response> ExecuteAsync(Request request, CancellationToken cancellationToken) =>
-            await mediator.Send(request, cancellationToken);
+        public override async Task<EndpointResponse> ExecuteAsync(Request request, CancellationToken cancellationToken)
+        {
+            var response = await mediator.Send(request, cancellationToken);
+            
+            var cookie = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Set to true if using HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
+            };
+            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.Token, cookie);
+            
+            return new EndpointResponse(response.Jwt);
+        }
     }
-
+    
     public record Request(string Email, string Password) : IRequest<Response>;
-
-    public record Response(string jwt);
-
+    public record Response(string Jwt, string Token);
+    public record EndpointResponse(string Jwt);
+    
     public class RequestHandler : IRequestHandler<Request, Response>
     {
         private readonly CryptoBank_DbContext _dbContext;
-        private readonly AuthConfigurations _authConfigs;
         private readonly Argon2IdPasswordHasher _paswordHasher;
         private readonly TokenGenerator _jwtTokenGenerator;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs,
-            Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator, IHttpContextAccessor httpContextAccessor)
+        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator)
         {
             _dbContext = dbContext;
-            _authConfigs = authConfigs.Value;
             _paswordHasher = paswordHasher;
             _jwtTokenGenerator = jwtTokenGenerator;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -79,15 +88,7 @@ public class Authenticate
             
             var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
             
-            _httpContextAccessor.HttpContext.Response.Cookies.Append("RefreshToken", refreshToken.Token, new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = true, // Set to true if using HTTPS
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.Add(_authConfigs.Jwt.RefreshTokenExpiration)
-            });
-
-            return new Response(jwt);
+            return new Response(jwt, refreshToken.Token);
         }
     }
 }

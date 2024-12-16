@@ -5,10 +5,7 @@ namespace CryptoBank_WebApi.Features.Auth.Domain;
 public class UserRefreshToken
 {
     public int Id { get; set; }
-    [Required]
-    public string Token { get; init; }
-    [Required]
-    public DateTime ExpiryDate { get; init; }
-    [Required]
-    public int UserId { get; init; }
+    public required string Token { get; init; }
+    public required DateTime ExpiryDate { get; init; }
+    public required int UserId { get; init; }
 }
