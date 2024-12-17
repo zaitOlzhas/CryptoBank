@@ -43,7 +43,7 @@ POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
 
 {
-  "Email": "user1@admin.com",
+  "Email": "admin2@admin.com",
   "Password": "123"
 }
 
@@ -58,7 +58,7 @@ Content-Type: application/json
 GET {{CryptoBank_WebApi_HostAddress}}/refresh-token/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
-Cookie: RefreshToken={{RefreshToken}}
+Cookie: {{RefreshToken}}
 
 > {%
     console.log(response.body);
