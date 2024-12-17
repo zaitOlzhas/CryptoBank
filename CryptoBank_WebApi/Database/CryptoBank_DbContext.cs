@@ -29,7 +29,7 @@ public class CryptoBank_DbContext : DbContext
         modelBuilder.Entity<UserRefreshToken>(userRefreshToken =>
         {
             userRefreshToken.HasKey(x => x.Id);
-
+            userRefreshToken.Property(x => x.Token);
             userRefreshToken.HasIndex(x => x.Token);
 
             userRefreshToken.Property(x => x.ExpiryDate)
@@ -75,10 +75,10 @@ public class CryptoBank_DbContext : DbContext
                 .IsRequired();
             
             user.Property(x => x.DateOfBirth)
-                .IsRequired(false);
+                .IsRequired();
             
             user.Property(x => x.RegistrationDate)
-                .IsRequired(true);
+                .IsRequired();
             
             user.Property(x => x.FirstName)
                 .IsRequired(false);

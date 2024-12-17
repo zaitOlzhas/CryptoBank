@@ -51,7 +51,7 @@ Content-Type: application/json
     console.log(response.body);
     client.global.set("jwt", response.body.jwt);
     console.log(response.headers);
-    client.global.set("refreshToken", response.headers['Set-Cookie']);
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
 ### Refresh authentification token
@@ -64,7 +64,7 @@ Cookie: RefreshToken={{RefreshToken}}
     console.log(response.body);
     client.global.set("jwt", response.body.jwt);
     console.log(response.headers);
-    client.global.set("refreshToken", response.headers['Set-Cookie']);
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
 ### Get Authenticated User Profile
