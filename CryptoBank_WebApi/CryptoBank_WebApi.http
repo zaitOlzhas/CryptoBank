@@ -1,19 +1,19 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
 @AccessToken = {{jwt}}
-@RefreshTokenCookie = {{refreshToken}}
+@RefreshToken = {{refreshToken}}
 
-### SignUp
+### SignUp new user
 POST {{CryptoBank_WebApi_HostAddress}}/signup/
 Content-Type: application/json
 
 {
-  "Email": "newuser2@admin.com",
+  "Email": "user1@admin.com",
   "Password": "123",
   "FirstName": "John",
   "LastName": "Doe"
 }
 
-### UserNews
+### Get News for User
 GET {{CryptoBank_WebApi_HostAddress}}/usernews/
 Accept: application/json
 Authorization: Bearer {{AccessToken}}
@@ -23,7 +23,7 @@ Authorization: Bearer {{AccessToken}}
     console.log(response.headers);
 %}
 
-### AdminNews
+### Get News for Admin
 GET {{CryptoBank_WebApi_HostAddress}}/adminnews/
 Accept: application/json
 Authorization: Bearer {{AccessToken}}
@@ -33,17 +33,17 @@ Authorization: Bearer {{AccessToken}}
     console.log(response.headers);
 %}
 
-### AllNews
+### Get All News
 GET {{CryptoBank_WebApi_HostAddress}}/allnews/
 Accept: application/json
 Authorization: Bearer {{AccessToken}}
 
-### Auth
+### Get Authentification Token
 POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
 
 {
-  "Email": "user1@admin.com",
+  "Email": "admin@admin.com",
   "Password": "123"
 }
 
@@ -51,15 +51,14 @@ Content-Type: application/json
     console.log(response.body);
     client.global.set("jwt", response.body.jwt);
     console.log(response.headers);
-    console.log(response.headers.valueOf('Set-Cookie'));
     client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
-### RefreshToken
+### Refresh authentification token
 GET {{CryptoBank_WebApi_HostAddress}}/refresh-token/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
-Cookie: {{RefreshTokenCookie}}
+Cookie: {{RefreshToken}}
 
 > {%
     console.log(response.body);
@@ -68,6 +67,24 @@ Cookie: {{RefreshTokenCookie}}
     client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
 %}
 
-###
+### Get Authenticated User Profile
+GET {{CryptoBank_WebApi_HostAddress}}/user-profile/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+### Update UserRole
+POST {{CryptoBank_WebApi_HostAddress}}/user-role/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+{
+  "UserId": 2,
+  "Role": "Administrator"
+}
+
+### Dictionary UserRoles
+GET {{CryptoBank_WebApi_HostAddress}}/dictionary/user-roles/
+Content-Type: application/json
+
 
 

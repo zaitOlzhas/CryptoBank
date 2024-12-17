@@ -68,4 +68,5 @@ app.MapGet("/health", async (context) =>
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapFastEndpoints();
+app.MapGet("/dictionary/user-roles", () => Enum.GetNames<UserRole>());
 app.Run();

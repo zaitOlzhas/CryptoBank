@@ -44,7 +44,7 @@ public class SignUp
                 throw new Exception("This email is already in use!");
             //TODO: Add http code 409 for conflict emails
             var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) ? UserRole.Administrator : UserRole.User;
-            var userEntity = new User
+            var userEntity = new Domain.User
             {
                 Email = request.Email.ToLower(),
                 Password = passwordHasher.HashPassword(request.Password),
