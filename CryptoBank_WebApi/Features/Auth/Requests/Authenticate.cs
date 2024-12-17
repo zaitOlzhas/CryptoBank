@@ -1,8 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
@@ -19,26 +21,41 @@ public class Authenticate
 {
     [HttpPost("/auth")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator) : Endpoint<Request,Response>
+    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
+        : Endpoint<Request, EndpointResponse>
     {
-        public override async Task<Response> ExecuteAsync(Request request,CancellationToken cancellationToken) =>
-            await mediator.Send(request,cancellationToken);
+        public override async Task<EndpointResponse> ExecuteAsync(Request request, CancellationToken cancellationToken)
+        {
+            var response = await mediator.Send(request, cancellationToken);
+            
+            var cookie = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true, // Set to true if using HTTPS
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
+            };
+            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.Token, cookie);
+            
+            return new EndpointResponse(response.Jwt);
+        }
     }
-
+    
     public record Request(string Email, string Password) : IRequest<Response>;
-    public record Response(string Jwt);
-
+    public record Response(string Jwt, string Token);
+    public record EndpointResponse(string Jwt);
+    
     public class RequestHandler : IRequestHandler<Request, Response>
     {
         private readonly CryptoBank_DbContext _dbContext;
-        private readonly AuthConfigurations _authConfigs;
         private readonly Argon2IdPasswordHasher _paswordHasher;
+        private readonly TokenGenerator _jwtTokenGenerator;
 
-        public RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs, Argon2IdPasswordHasher paswordHasher)
+        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator)
         {
             _dbContext = dbContext;
-            _authConfigs = authConfigs.Value;
             _paswordHasher = paswordHasher;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -53,49 +70,25 @@ public class Authenticate
                         Password = x.Password
                     }
                 )
-                .FirstOrDefaultAsync(cancellationToken);
-            
-           if(user is null)
-               throw new Exception("Invalid credentials");
-           
-           if(!_paswordHasher.VerifyHashedPassword(request.Password, user.Password))
-                  throw new Exception("Invalid credentials");
-           
-           var jwt  = user switch
-           {
-               {Role: "User"} => GenerateJwt(user.Email, new [] {UserRole.User}),
-               {Role: "Analyst"} => GenerateJwt(user.Email, new [] {UserRole.Analyst}),
-               {Role: "Administrator"} => GenerateJwt(user.Email, new [] {UserRole.Administrator}),
-               _ => throw new Exception("Invalid user role in DB.")
-           };
-           return new Response(jwt);
-        }
-        private string GenerateJwt(string email, UserRole[] roles, int? rank = null)
-        {
-            //TODO: User custom claims
-            var claims = new List<Claim>
+                .SingleOrDefaultAsync(cancellationToken);
+
+            if (user is null)
+                throw new Exception("Invalid credentials");
+
+            if (!_paswordHasher.VerifyHashedPassword(user.Password, request.Password))
+                throw new Exception("Invalid credentials");
+
+            var jwt = user switch
             {
-                new(ClaimTypes.Email, email),
+                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.User }),
+                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Analyst }),
+                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Administrator, UserRole.User }),
+                _ => throw new Exception("Invalid user role in DB.")
             };
-
-            foreach (var role in roles)
-            {
-                claims.Add(new(ClaimTypes.Role, role.ToString()));
-            }
             
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_authConfigs.Jwt.SigningKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now + _authConfigs.Jwt.Expiration;
-
-            var token = new JwtSecurityToken(
-                _authConfigs.Jwt.Issuer,
-                _authConfigs.Jwt.Audience,
-                claims,
-                expires: expires,
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
+            
+            return new Response(jwt, refreshToken.Token);
         }
     }
 }

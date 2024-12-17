@@ -1,15 +1,73 @@
 @CryptoBank_WebApi_HostAddress = http://localhost:5055
+@AccessToken = {{jwt}}
+@RefreshTokenCookie = {{refreshToken}}
 
+### SignUp
+POST {{CryptoBank_WebApi_HostAddress}}/signup/
+Content-Type: application/json
+
+{
+  "Email": "newuser2@admin.com",
+  "Password": "123",
+  "FirstName": "John",
+  "LastName": "Doe"
+}
+
+### UserNews
 GET {{CryptoBank_WebApi_HostAddress}}/usernews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+> {%
+    console.log(response.body);
+    console.log(response.headers);
+%}
+
+### AdminNews
 GET {{CryptoBank_WebApi_HostAddress}}/adminnews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+> {%
+    console.log(response.body);
+    console.log(response.headers);
+%}
+
+### AllNews
 GET {{CryptoBank_WebApi_HostAddress}}/allnews/
 Accept: application/json
-###
+Authorization: Bearer {{AccessToken}}
+
+### Auth
 POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
-Cookie: key=first-value
-{"Email": "123@123.com","Password": "123"}
+
+{
+  "Email": "user1@admin.com",
+  "Password": "123"
+}
+
+> {%
+    console.log(response.body);
+    client.global.set("jwt", response.body.jwt);
+    console.log(response.headers);
+    console.log(response.headers.valueOf('Set-Cookie'));
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
+%}
+
+### RefreshToken
+GET {{CryptoBank_WebApi_HostAddress}}/refresh-token/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+Cookie: {{RefreshTokenCookie}}
+
+> {%
+    console.log(response.body);
+    client.global.set("jwt", response.body.jwt);
+    console.log(response.headers);
+    client.global.set("refreshToken", response.headers.valueOf('Set-Cookie'));
+%}
+
+###
+
+

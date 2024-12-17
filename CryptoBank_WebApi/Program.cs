@@ -5,6 +5,7 @@ using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Authorization.Requirements;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.News.Configurations;
@@ -40,7 +41,7 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(PolicyNames.UserRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.User)));
     options.AddPolicy(PolicyNames.AnalystRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Analyst)));
-    options.AddPolicy(PolicyNames.AdministratorRole,policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
+    options.AddPolicy(PolicyNames.AdministratorRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
 });
 
 builder.Services.AddSingleton<Dispatcher>();
@@ -49,6 +50,7 @@ builder.Services.AddFastEndpoints();
 builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 builder.Services.Configure<AuthConfigurations>(builder.Configuration.GetSection("Features:Auth"));
 builder.Services.AddTransient<Argon2IdPasswordHasher>();
+builder.Services.AddTransient<TokenGenerator>();
 builder.Services.Configure<Argon2IdOptions>(builder.Configuration.GetSection("Common:Passwords:Argon2Id"));
 var app = builder.Build();
 

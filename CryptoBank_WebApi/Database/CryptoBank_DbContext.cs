@@ -9,6 +9,7 @@ public class CryptoBank_DbContext : DbContext
 {
     public DbSet<News> News { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
 
     public CryptoBank_DbContext(DbContextOptions<CryptoBank_DbContext> options) : base(options)
     {
@@ -20,7 +21,25 @@ public class CryptoBank_DbContext : DbContext
 
         MapNews(modelBuilder);
         MapUser(modelBuilder);
+        MapUserRefreshToken(modelBuilder);
     }
+
+    private void MapUserRefreshToken(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<UserRefreshToken>(userRefreshToken =>
+        {
+            userRefreshToken.HasKey(x => x.Id);
+            userRefreshToken.Property(x => x.Token);
+            userRefreshToken.HasIndex(x => x.Token);
+
+            userRefreshToken.Property(x => x.ExpiryDate)
+                .IsRequired();
+
+            userRefreshToken.Property(x => x.UserId)
+                .IsRequired();
+        });
+    }
+
     private void MapNews(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<News>(news =>
