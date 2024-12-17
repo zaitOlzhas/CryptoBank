@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CryptoBank_WebApi.Migrations
 {
     [DbContext(typeof(CryptoBank_DbContext))]
-    [Migration("20241215062146_UserRefreshTokenChanges1")]
-    partial class UserRefreshTokenChanges1
+    [Migration("20241217150206_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -51,8 +51,7 @@ namespace CryptoBank_WebApi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("RegistrationDate")
-                        .IsRequired()
+                    b.Property<DateTime>("RegistrationDate")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Role")
