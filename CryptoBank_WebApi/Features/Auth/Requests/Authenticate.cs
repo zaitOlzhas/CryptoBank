@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
