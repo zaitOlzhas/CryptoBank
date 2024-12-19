@@ -11,6 +11,6 @@ public class UserModel
     public string Role { get; set; }
     public DateOnly? DateOfBirth { get; set; }
     public DateTime RegistrationDate { get; set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
 }

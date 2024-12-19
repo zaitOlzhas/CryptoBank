@@ -14,33 +14,33 @@ using Microsoft.Extensions.Options;
 
 namespace CryptoBank_WebApi.Features.User.Requests;
 
-public class UserProfile
+public class GetUserProfile
 {
     [HttpGet("/user-profile")]
     [Authorize]
-    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
+    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor) : EndpointWithoutRequest<Response>
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var request = new Request();
+            var principal = httpContextAccessor.HttpContext.User;
+            var request = new Request(principal);
             var response = await mediator.Send(request, cancellationToken);
             return response;
         }
     }
     
-    public record Request() : IRequest<Response>;
+    public record Request(ClaimsPrincipal principal) : IRequest<Response>;
     public record Response(UserModel userProfile);
-    public class RequestHandler(CryptoBank_DbContext dbContext, IHttpContextAccessor httpContextAccessor)
+    public class RequestHandler(CryptoBank_DbContext dbContext)
         : IRequestHandler<Request ,Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            var principal = httpContextAccessor.HttpContext.User;
-            if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
+            if (!request.principal.HasClaim(x => x.Type == ClaimTypes.Email))
             {
                 throw new Exception("Invalid auth token");
             }
-            var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = request.principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var user = await dbContext.Users
                 .Where(x => x.Email == email.ToLower())
                 .Select(x => new UserModel
@@ -50,8 +50,8 @@ public class UserProfile
                         Role = x.Role,
                         DateOfBirth = x.DateOfBirth,
                         RegistrationDate = x.RegistrationDate,
-                        FirstName = x.FirstName!,
-                        LastName = x.LastName!
+                        FirstName = x.FirstName,
+                        LastName = x.LastName
                     }
                 ).SingleOrDefaultAsync(cancellationToken);
 
