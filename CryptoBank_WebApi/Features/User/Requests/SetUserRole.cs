@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace CryptoBank_WebApi.Features.User.Requests;
 
-public class GetUserRole
+public class SetUserRole
 {
     [HttpPost("/user-role")]
     [Authorize(Policy = PolicyNames.AdministratorRole)]
