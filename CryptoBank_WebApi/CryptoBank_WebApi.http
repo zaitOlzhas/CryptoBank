@@ -86,5 +86,11 @@ Authorization: Bearer {{AccessToken}}
 GET {{CryptoBank_WebApi_HostAddress}}/dictionary/user-roles/
 Content-Type: application/json
 
+### Create Account
+POST {{CryptoBank_WebApi_HostAddress}}/create-account/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+
 
 
