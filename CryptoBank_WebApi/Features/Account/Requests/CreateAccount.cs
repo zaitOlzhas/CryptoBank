@@ -56,14 +56,15 @@ public class CreateAccount
 
             var newAccount = await dbContext.Accounts.AddAsync(account, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
-            
-            return new Response(new AccountModel(
-                newAccount.Entity.Number,
-                newAccount.Entity.Currency,
-                newAccount.Entity.Amount,
-                newAccount.Entity.CreatedOn,
-                newAccount.Entity.UserId
-            ));
+
+            return new Response(new AccountModel
+            {
+                Number = newAccount.Entity.Number,
+                Currency = newAccount.Entity.Currency,
+                Amount = newAccount.Entity.Amount,
+                CreatedOn = newAccount.Entity.CreatedOn,
+                UserId = newAccount.Entity.UserId
+            });
         }
     }
 }

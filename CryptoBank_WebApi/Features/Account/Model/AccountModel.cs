@@ -7,13 +7,4 @@ public class AccountModel
     public decimal Amount { get; set; }
     public DateTime CreatedOn { get; set; }
     public int UserId { get; set; }
-
-    public AccountModel(string number, string currency, decimal amount, DateTime createdOn, int userId)
-    {
-        Number = number;
-        Currency = currency;
-        Amount = amount;
-        CreatedOn = createdOn;
-        UserId = userId;
-    }
 }

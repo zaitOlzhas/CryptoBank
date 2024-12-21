@@ -43,7 +43,7 @@ POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
 
 {
-  "Email": "admin@admin.com",
+  "Email": "user1@admin.com",
   "Password": "123"
 }
 
@@ -91,6 +91,9 @@ POST {{CryptoBank_WebApi_HostAddress}}/create-account/
 Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
 
-
+### Get user accounts
+GET {{CryptoBank_WebApi_HostAddress}}/user-accounts/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
 
