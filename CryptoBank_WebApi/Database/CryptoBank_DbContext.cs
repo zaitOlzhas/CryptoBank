@@ -12,6 +12,7 @@ public class CryptoBank_DbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
     public DbSet<Account> Accounts { get; set; }
+    public DbSet<MoneyTransaction> MoneyTransactions { get; set; }
 
     public CryptoBank_DbContext(DbContextOptions<CryptoBank_DbContext> options) : base(options)
     {
@@ -25,8 +26,25 @@ public class CryptoBank_DbContext : DbContext
         MapUser(modelBuilder);
         MapUserRefreshToken(modelBuilder);
         MapAccount(modelBuilder);
+        MapMoneyTransaction(modelBuilder);
     }
 
+    private void MapMoneyTransaction(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MoneyTransaction>(moneyTransaction =>
+        {
+            moneyTransaction.HasKey(x => x.Id);
+            moneyTransaction.Property(x => x.SourceAccount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.DestinationAccount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.Amount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.CreatedOn)
+                .HasDefaultValueSql("NOW()")
+                .IsRequired();
+        });
+    }
     private void MapAccount(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(account =>
