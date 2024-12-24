@@ -16,7 +16,7 @@ public class MoneyTransfer
     {
         public override async Task<Response> ExecuteAsync(EndPointRequest request, CancellationToken ct)
         {
-            var principal = contextAccessor.HttpContext.User;
+            var principal = contextAccessor.HttpContext!.User;
             var cqrsRequest = new Request
             {
                 SourceAccountNumber = request.SourceAccountNumber,
@@ -29,16 +29,16 @@ public class MoneyTransfer
     }
     public record EndPointRequest
     {
-        public string SourceAccountNumber { get; set; }
-        public string DestinationAccountNumber { get; set; }
+        public required string SourceAccountNumber { get; set; } 
+        public required string DestinationAccountNumber { get; set; }
         public decimal Amount { get; set; }
     }
     public record Request: IRequest<Response>
     {
-        public string SourceAccountNumber { get; set; }
-        public string DestinationAccountNumber { get; set; }
+        public required string SourceAccountNumber { get; set; }
+        public required string DestinationAccountNumber { get; set; }
         public decimal Amount { get; set; }
-        public ClaimsPrincipal Principal { get; set; }
+        public required ClaimsPrincipal Principal { get; set; }
     }
     public record Response;
     public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, Response>
@@ -55,14 +55,14 @@ public class MoneyTransfer
             if (user is null)
                 throw new Exception("User not found");
             
-            var sourceAccount = await dbContext.Accounts.FindAsync(request.SourceAccountNumber);
+            var sourceAccount = await dbContext.Accounts.FindAsync(request.SourceAccountNumber, cancellationToken);
             if (sourceAccount is null)
                 throw new Exception("Source account not found");
             
             if(sourceAccount.UserId!=user.Id)
                 throw new Exception("You are not the owner of the source account");
             
-            var destinationAccount = await dbContext.Accounts.FindAsync(request.DestinationAccountNumber);
+            var destinationAccount = await dbContext.Accounts.FindAsync(request.DestinationAccountNumber, cancellationToken);
             if (destinationAccount is null)
                 throw new Exception("Destination account not found");
             

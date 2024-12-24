@@ -19,7 +19,7 @@ public class GetUserAccounts
     {
         public override async Task<AccountModel[]> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = contextAccessor.HttpContext.User;
+            var principal = contextAccessor.HttpContext!.User;
             var request = new GetAccountsRequest(principal);
             var response = await mediator.Send(request, cancellationToken);
             return response;

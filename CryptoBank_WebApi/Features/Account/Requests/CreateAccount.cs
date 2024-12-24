@@ -20,13 +20,13 @@ public class CreateAccount
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken) 
         {
-            var principal = contextAccessor.HttpContext.User;
+            var principal = contextAccessor.HttpContext!.User;
             var request = new Request(principal);
             return await mediator.Send(request, cancellationToken);
         }
     }
     public record Request(ClaimsPrincipal Principal) : IRequest<Response>;
-    public record Response(AccountModel account);
+    public record Response(AccountModel Account);
 
     public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AccountConfigurations> authConfigs)
         : IRequestHandler<Request, Response>
@@ -50,9 +50,11 @@ public class CreateAccount
             if (userAccounts.Count >= authConfigs.Value.AccountLimitPerUser)
                 throw new Exception("Account limit reached");
 
-            var account = new Domain.Account();
-            account.Currency = "USD";
-            account.UserId = user.Id;
+            var account = new Domain.Account()
+            {
+                Currency = "USD",
+                UserId = user.Id
+            };
 
             var newAccount = await dbContext.Accounts.AddAsync(account, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
