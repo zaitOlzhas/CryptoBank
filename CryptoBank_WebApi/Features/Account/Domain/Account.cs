@@ -7,5 +7,4 @@ public class Account
     public decimal Amount { get; set; }
     public DateTime CreatedOn { get; set; }
     public int UserId { get; set; }
-    
 }

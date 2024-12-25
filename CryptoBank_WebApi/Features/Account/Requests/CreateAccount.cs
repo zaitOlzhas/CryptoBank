@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Account.Configurations;
 using CryptoBank_WebApi.Features.Account.Model;
@@ -33,21 +34,19 @@ public class CreateAccount
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            if (!request.Principal.HasClaim(x => x.Type == ClaimTypes.Email))
-                throw new Exception("Invalid user");
-            var claims = request.Principal.Claims.ToList();
-            var email = claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = request.Principal.GetClaim(ClaimTypes.Email);
+            if(string.IsNullOrWhiteSpace(email)) throw new Exception("Invalid user");
             var user = await dbContext.Users
                 .Where(x => x.Email == email)
                 .SingleOrDefaultAsync(cancellationToken);
             if (user is null)
                 throw new Exception("Invalid user");
 
-            var userAccounts = await dbContext.Accounts
+            var userAccountsCount = await dbContext.Accounts
                 .Where(x => x.UserId == user.Id)
-                .ToListAsync(cancellationToken);
+                .CountAsync(cancellationToken);
 
-            if (userAccounts.Count >= authConfigs.Value.AccountLimitPerUser)
+            if (userAccountsCount >= authConfigs.Value.AccountLimitPerUser)
                 throw new Exception("Account limit reached");
 
             var account = new Domain.Account()

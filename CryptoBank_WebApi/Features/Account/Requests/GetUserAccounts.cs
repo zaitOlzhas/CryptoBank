@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CryptoBank_WebApi.Authorization;
+using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Account.Model;
 using CryptoBank_WebApi.Features.News.Models;
@@ -31,10 +32,8 @@ public class GetUserAccounts
     {
         public async Task<AccountModel[]> Handle(GetAccountsRequest request, CancellationToken cancellationToken)
         {
-            if (!request.Principal.HasClaim(x => x.Type == ClaimTypes.Email))
-                throw new Exception("Invalid user");
-            var claims = request.Principal.Claims.ToList();
-            var email = claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = request.Principal.GetClaim(ClaimTypes.Email);
+            if(string.IsNullOrWhiteSpace(email)) throw new Exception("Invalid user");
             var user = await dbContext.Users
                 .Where(x => x.Email == email)
                 .SingleOrDefaultAsync(cancellationToken);
@@ -51,8 +50,8 @@ public class GetUserAccounts
                     UserId = x.UserId,
                     CreatedOn = x.CreatedOn
                 })
-                .ToListAsync(cancellationToken);
-            return userAccounts.ToArray();
+                .ToArrayAsync(cancellationToken);
+            return userAccounts;
         }
     }
 }

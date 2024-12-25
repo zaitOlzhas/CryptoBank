@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Account.Domain;
 using FastEndpoints;
@@ -45,10 +46,8 @@ public class MoneyTransfer
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            if (!request.Principal.HasClaim(x => x.Type == ClaimTypes.Email))
-                throw new Exception("Authorized user has not Email claim");
-            var claims = request.Principal.Claims.ToList();
-            var email = claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = request.Principal.GetClaim(ClaimTypes.Email);
+            if(string.IsNullOrWhiteSpace(email)) throw new Exception("Invalid user");
             var user = await dbContext.Users
                 .Where(x => x.Email == email)
                 .SingleOrDefaultAsync(cancellationToken);

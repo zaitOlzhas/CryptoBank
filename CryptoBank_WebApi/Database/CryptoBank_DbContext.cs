@@ -50,7 +50,6 @@ public class CryptoBank_DbContext : DbContext
         modelBuilder.Entity<Account>(account =>
         {
             account.HasKey(x => x.Number);
-            account.HasIndex(x => x.Number);
             account.Property(x => x.Number)
                 .HasMaxLength(36)
                 .HasDefaultValueSql("gen_random_uuid()")
@@ -68,6 +67,7 @@ public class CryptoBank_DbContext : DbContext
 
             account.Property(x => x.UserId)
                 .IsRequired();
+            account.HasIndex(x => x.UserId);
         });
     }
 
