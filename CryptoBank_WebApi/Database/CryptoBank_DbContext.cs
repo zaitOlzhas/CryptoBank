@@ -1,3 +1,4 @@
+using CryptoBank_WebApi.Features.Account.Domain;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.News.Domain;
 using FastEndpoints;
@@ -10,6 +11,8 @@ public class CryptoBank_DbContext : DbContext
     public DbSet<News> News { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
+    public DbSet<Account> Accounts { get; set; }
+    public DbSet<MoneyTransaction> MoneyTransactions { get; set; }
 
     public CryptoBank_DbContext(DbContextOptions<CryptoBank_DbContext> options) : base(options)
     {
@@ -22,6 +25,50 @@ public class CryptoBank_DbContext : DbContext
         MapNews(modelBuilder);
         MapUser(modelBuilder);
         MapUserRefreshToken(modelBuilder);
+        MapAccount(modelBuilder);
+        MapMoneyTransaction(modelBuilder);
+    }
+
+    private void MapMoneyTransaction(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MoneyTransaction>(moneyTransaction =>
+        {
+            moneyTransaction.HasKey(x => x.Id);
+            moneyTransaction.Property(x => x.SourceAccount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.DestinationAccount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.Amount)
+                .IsRequired();
+            moneyTransaction.Property(x => x.CreatedOn)
+                .HasDefaultValueSql("NOW()")
+                .IsRequired();
+        });
+    }
+    private void MapAccount(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Account>(account =>
+        {
+            account.HasKey(x => x.Number);
+            account.Property(x => x.Number)
+                .HasMaxLength(36)
+                .HasDefaultValueSql("gen_random_uuid()")
+                .ValueGeneratedOnAdd();
+            
+            account.Property(x => x.Currency)
+                .IsRequired();
+
+            account.Property(x => x.Amount)
+                .HasDefaultValue(0);
+
+            account.Property(x => x.CreatedOn)
+                .HasDefaultValueSql("NOW()")
+                .IsRequired();
+
+            account.Property(x => x.UserId)
+                .IsRequired();
+            account.HasIndex(x => x.UserId);
+        });
     }
 
     private void MapUserRefreshToken(ModelBuilder modelBuilder)

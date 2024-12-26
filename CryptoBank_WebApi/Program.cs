@@ -5,6 +5,7 @@ using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Authorization.Requirements;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Account.Configurations;
 using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -49,6 +50,7 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.Get
 builder.Services.AddFastEndpoints();
 builder.Services.Configure<NewsConfigurations>(builder.Configuration.GetSection("Features:News"));
 builder.Services.Configure<AuthConfigurations>(builder.Configuration.GetSection("Features:Auth"));
+builder.Services.Configure<AccountConfigurations>(builder.Configuration.GetSection("Features:Account"));
 builder.Services.AddTransient<Argon2IdPasswordHasher>();
 builder.Services.AddTransient<TokenGenerator>();
 builder.Services.Configure<Argon2IdOptions>(builder.Configuration.GetSection("Common:Passwords:Argon2Id"));

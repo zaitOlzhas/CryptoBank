@@ -3,6 +3,7 @@ using System;
 using CryptoBank_WebApi.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CryptoBank_WebApi.Migrations
 {
     [DbContext(typeof(CryptoBank_DbContext))]
-    partial class CryptoBank_DbContextModelSnapshot : ModelSnapshot
+    [Migration("20241221191655_AccoundModel3")]
+    partial class AccoundModel3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,35 +55,6 @@ namespace CryptoBank_WebApi.Migrations
                     b.HasIndex("Number");
 
                     b.ToTable("Accounts");
-                });
-
-            modelBuilder.Entity("CryptoBank_WebApi.Features.Account.Domain.MoneyTransaction", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("NOW()");
-
-                    b.Property<string>("DestinationAccount")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("SourceAccount")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MoneyTransactions");
                 });
 
             modelBuilder.Entity("CryptoBank_WebApi.Features.Auth.Domain.User", b =>

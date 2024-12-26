@@ -23,12 +23,15 @@ public class RefreshToken
     {
         public override async Task<EndpointResponse> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var refreshToken = httpContextAccessor.HttpContext.Request.Cookies["RefreshToken"];
+            var refreshToken = httpContextAccessor.HttpContext!.Request.Cookies["RefreshToken"];
             var principal = httpContextAccessor.HttpContext.User;
-            
-            var request = new Request(refreshToken, principal);
+
+            if (refreshToken is null)
+                throw new Exception("Invalid refresh token");
+
+            var request = new Request(refreshToken!, principal);
             var response = await mediator.Send(request, cancellationToken);
-            
+
             var cookie = new CookieOptions
             {
                 HttpOnly = true,
@@ -37,7 +40,7 @@ public class RefreshToken
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
             httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.refreshToken, cookie);
-            
+
             return new EndpointResponse(response.jwt);
         }
     }
@@ -66,7 +69,7 @@ public class RefreshToken
             var roles = claims.Where(x => x.Type == ClaimTypes.Role).Select(x => Enum.Parse<UserRole>(x.Value))
                 .ToArray();
             
-            var newToken = jwtTokenGenerator.GenerateJwt(email, roles);
+            var newToken = jwtTokenGenerator.GenerateJwt(email!, roles);
             var newRefreshToken = await jwtTokenGenerator.GenerateRefreshToken(dbToken.UserId, cancellationToken);
 
             return new Response(newToken, newRefreshToken.Token);

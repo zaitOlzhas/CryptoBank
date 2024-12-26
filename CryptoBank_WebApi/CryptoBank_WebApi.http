@@ -7,10 +7,10 @@ POST {{CryptoBank_WebApi_HostAddress}}/signup/
 Content-Type: application/json
 
 {
-  "Email": "user1@admin.com",
+  "Email": "analyst1@admin.com",
   "Password": "123",
-  "FirstName": "John",
-  "LastName": "Doe"
+  "FirstName": "Analyst 1",
+  "LastName": "ddd"
 }
 
 ### Get News for User
@@ -43,7 +43,7 @@ POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
 
 {
-  "Email": "admin@admin.com",
+  "Email": "analyst1@admin.com",
   "Password": "123"
 }
 
@@ -78,13 +78,41 @@ Content-Type: application/json
 Authorization: Bearer {{AccessToken}}
 
 {
-  "UserId": 2,
-  "Role": "Administrator"
+  "UserId": 3,
+  "Role": "Analyst"
 }
 
 ### Dictionary UserRoles
 GET {{CryptoBank_WebApi_HostAddress}}/dictionary/user-roles/
 Content-Type: application/json
 
+### Create Account
+POST {{CryptoBank_WebApi_HostAddress}}/create-account/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
+### Get user accounts
+GET {{CryptoBank_WebApi_HostAddress}}/user-accounts/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
 
+###Transfer money
+POST {{CryptoBank_WebApi_HostAddress}}/money-transfer/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+{
+  "SourceAccountNumber":"7b6e4a4b-f0fe-4cea-8111-8cf504a7da8a",
+  "DestinationAccountNumber":"f78d6b07-2d33-4443-91f1-d679a2b80b43",
+  "Amount":"2"
+}
+
+### Get accounts report
+GET {{CryptoBank_WebApi_HostAddress}}/accounts-report/
+Content-Type: application/json
+Authorization: Bearer {{AccessToken}}
+
+{
+  "StartDate": "2023-01-01",
+  "EndDate": "2024-12-31"
+}

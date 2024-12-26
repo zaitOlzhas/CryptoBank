@@ -22,27 +22,27 @@ public class GetUserProfile
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = httpContextAccessor.HttpContext.User;
+            var principal = httpContextAccessor.HttpContext!.User;
             var request = new Request(principal);
             var response = await mediator.Send(request, cancellationToken);
             return response;
         }
     }
     
-    public record Request(ClaimsPrincipal principal) : IRequest<Response>;
-    public record Response(UserModel userProfile);
+    public record Request(ClaimsPrincipal Principal) : IRequest<Response>;
+    public record Response(UserModel UserProfile);
     public class RequestHandler(CryptoBank_DbContext dbContext)
         : IRequestHandler<Request ,Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            if (!request.principal.HasClaim(x => x.Type == ClaimTypes.Email))
+            if (!request.Principal.HasClaim(x => x.Type == ClaimTypes.Email))
             {
                 throw new Exception("Invalid auth token");
             }
-            var email = request.principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
+            var email = request.Principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var user = await dbContext.Users
-                .Where(x => x.Email == email.ToLower())
+                .Where(x => x.Email.Equals(email!, StringComparison.OrdinalIgnoreCase))
                 .Select(x => new UserModel
                     {
                         Id = x.Id,
