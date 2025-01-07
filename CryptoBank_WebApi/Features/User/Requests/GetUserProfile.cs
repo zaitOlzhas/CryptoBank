@@ -42,7 +42,7 @@ public class GetUserProfile
             }
             var email = request.Principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var user = await dbContext.Users
-                .Where(x => x.Email.Equals(email!, StringComparison.OrdinalIgnoreCase))
+                .Where(x => x.Email == email!.ToLower())
                 .Select(x => new UserModel
                     {
                         Id = x.Id,
