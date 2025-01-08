@@ -7,7 +7,9 @@ using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
+using CryptoBank_WebApi.Validation;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -41,6 +43,15 @@ public class Authenticate
     }
     
     public record Request(string Email, string Password) : IRequest<Response>;
+    public class RequestValidator : AbstractValidator<Request>
+    {
+        private const string MessagePrefix = "authenticate_";
+        public RequestValidator(CryptoBank_DbContext dbContext)
+        {
+            RuleFor(x => x.Email)
+                .ValidateEmail(MessagePrefix, dbContext);
+        }
+    }
     public record Response(string Jwt, string Token);
     public record EndpointResponse(string Jwt);
     
@@ -71,17 +82,15 @@ public class Authenticate
                 )
                 .SingleOrDefaultAsync(cancellationToken);
 
-            if (user is null)
-                throw new Exception("Invalid credentials");
-
-            if (!_paswordHasher.VerifyHashedPassword(user.Password, request.Password))
+            if (!_paswordHasher.VerifyHashedPassword(user!.Password, request.Password))
                 throw new Exception("Invalid credentials");
 
             var jwt = user switch
             {
-                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.User }),
-                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Analyst }),
-                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Administrator, UserRole.User }),
+                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.User]),
+                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.Analyst]),
+                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.Administrator, UserRole.User
+                ]),
                 _ => throw new Exception("Invalid user role in DB.")
             };
             

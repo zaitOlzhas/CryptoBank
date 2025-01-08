@@ -39,15 +39,15 @@ public class RefreshToken
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
-            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.refreshToken, cookie);
+            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.RefreshToken, cookie);
 
-            return new EndpointResponse(response.jwt);
+            return new EndpointResponse(response.Jwt);
         }
     }
 
     public record Request(string RefreshToken, ClaimsPrincipal Principal) : IRequest<Response>;
-    public record Response(string jwt, string refreshToken);
-    public record EndpointResponse(string jwt);
+    public record Response(string Jwt, string RefreshToken);
+    public record EndpointResponse(string Jwt);
 
     public class RequestHandler(CryptoBank_DbContext dbContext, TokenGenerator jwtTokenGenerator) 
         : IRequestHandler<Request, Response>
