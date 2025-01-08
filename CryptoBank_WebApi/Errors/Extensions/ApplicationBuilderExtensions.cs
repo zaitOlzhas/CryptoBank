@@ -40,7 +40,7 @@ public static class ApplicationBuilderExtensions
                         await context.Response.WriteAsync(JsonSerializer.Serialize(validationProblemDetails));
                         break;
                     }
-                    /*case LogicConflictException logicConflictException:
+                    case LogicConflictException logicConflictException:
                         var logicConflictProblemDetails = new ProblemDetails
                         {
                             Title = "Logic conflict",
@@ -58,7 +58,6 @@ public static class ApplicationBuilderExtensions
 
                         await context.Response.WriteAsync(JsonSerializer.Serialize(logicConflictProblemDetails));
                         break;
-                        */
                     case OperationCanceledException:
                         var operationCanceledProblemDetails = new ProblemDetails
                         {

@@ -103,8 +103,8 @@ Authorization: Bearer {{AccessToken}}
 
 {
   "SourceAccountNumber":"7b6e4a4b-f0fe-4cea-8111-8cf504a7da8a",
-  "DestinationAccountNumber":"f78d6b07-2d33-4443-91f1-d679a2b80b42",
-  "Amount":"10"
+  "DestinationAccountNumber":"f78d6b07-2d33-4443-91f1-d679a2b80b43",
+  "Amount":"0"
 }
 
 ### Get accounts report

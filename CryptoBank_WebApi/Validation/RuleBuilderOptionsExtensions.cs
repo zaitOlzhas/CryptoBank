@@ -19,7 +19,7 @@ public static class RuleBuilderOptionsExtensions
             .WithErrorCode(prefix + AccountNumberDoesNotExist);
     }
 
-    public static IRuleBuilderOptions<T, string> ValidateEmail<T>(this IRuleBuilder<T, string> builder, 
+    public static IRuleBuilderOptions<T, string?> ValidateEmail<T>(this IRuleBuilder<T, string?> builder, 
         string prefix,
         CryptoBank_DbContext context)
     {
