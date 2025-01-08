@@ -8,7 +8,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using static CryptoBank_WebApi.Features.Account.Errors.Codes.MoneyTransferValidationErrors;
 namespace CryptoBank_WebApi.Features.Account.Requests;
 
 public class MoneyTransfer
@@ -41,27 +40,31 @@ public class MoneyTransfer
     }
     public record Request: IRequest<Response>
     {
-        public required string SourceAccountNumber { get; set; }
-        public required string DestinationAccountNumber { get; set; }
-        public required decimal Amount { get; set; }
-        public required string Email { get; set; }
+        public required string SourceAccountNumber { get; init; }
+        public required string DestinationAccountNumber { get; init; }
+        public required decimal Amount { get; init; }
+        public required string Email { get; init; }
     }
     public record Response;
     public class RequestValidator : AbstractValidator<Request>
     {
-        public RequestValidator()
+        private const string MessagePrefix = "money_transfer_validation_";
+        public RequestValidator(CryptoBank_DbContext dbContext)
         {
-            RuleFor(x => x.Email).ValidEmail();
-            RuleFor(x => x.SourceAccountNumber).ValidSourceAccountNumber();
-            RuleFor(x => x.DestinationAccountNumber).ValidDestinationAccountNumber();
-            RuleFor(x => x.Amount).GreaterThan(0).WithErrorCode(AmountLessOrEqualZero);
+            RuleFor(x => x.Email)
+                .ValidateEmail(MessagePrefix, dbContext);
+            RuleFor(x => x.SourceAccountNumber)
+                .ValidateAccountNumber(MessagePrefix + "source_account_", dbContext);
+            RuleFor(x => x.DestinationAccountNumber)
+                .ValidateAccountNumber(MessagePrefix + "destination_account_", dbContext);
+            RuleFor(x => x.Amount)
+                .ValidateAmount(MessagePrefix);
         }
     }
     public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            
             var user = await dbContext.Users
                 .Where(x => x.Email == request.Email.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
