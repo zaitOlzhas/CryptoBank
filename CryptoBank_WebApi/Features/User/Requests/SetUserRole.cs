@@ -1,8 +1,7 @@
-using System.ComponentModel.DataAnnotations;
 using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Database;
-using CryptoBank_WebApi.Features.Auth.Model;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
@@ -12,32 +11,38 @@ public class SetUserRole
 {
     [HttpPost("/user-role")]
     [Authorize(Policy = PolicyNames.AdministratorRole)]
-    public class Endpoint(IMediator mediator) : Endpoint<Request, Response>
+    public class Endpoint(IMediator mediator) : Endpoint<Request, EmptyResponse>
     {
-        public override async Task<Response> ExecuteAsync(Request request, CancellationToken cancellationToken) =>
+        public override async Task<EmptyResponse> ExecuteAsync(Request request, CancellationToken cancellationToken) =>
             await mediator.Send(request, cancellationToken);
     }
 
-    public record Request(int UserId, string Role) : IRequest<Response>;
-    public record Response();
-
-    public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, Response>
+    public record Request(int UserId, string Role) : IRequest<EmptyResponse>;
+    public class RequestValidator : AbstractValidator<Request>
     {
-        public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
+        private const string MessagePrefix = "set_user_role_validation_";
+        public RequestValidator(CryptoBank_DbContext dbContext)
         {
-            if (!Enum.TryParse<CryptoBank_WebApi.Features.Auth.Domain.UserRole>(request.Role, out var role))
-            {
-                throw new ValidationException("Invalid role");
-            }
-            var user = await dbContext.Users.FindAsync(request.UserId);
-            if (user is null)
-                throw new Exception("User not found");
+            RuleFor(x=>x.Role)
+                .Must(x=>Enum.TryParse<Auth.Domain.UserRole>(x,out _))
+                .WithErrorCode(MessagePrefix + "role_invalid");
+            RuleFor(x=>x.UserId)
+                .MustAsync(async (id, ct) => await dbContext.Users.FindAsync(id, ct) is not null)
+                .WithErrorCode(MessagePrefix + "user_not_found");
+        }
+    }
+
+    public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, EmptyResponse>
+    {
+        public async Task<EmptyResponse> Handle(Request request, CancellationToken cancellationToken)
+        {
+            var user = await dbContext.Users.FindAsync(request.UserId, cancellationToken);
             
-            user.Role = role.ToString();
+            user!.Role = request.Role;
             
             await dbContext.SaveChangesAsync(cancellationToken);
 
-            return new Response();
+            return new EmptyResponse();
         }
     }
 }

@@ -45,7 +45,7 @@ public class Authenticate
     public record Request(string Email, string Password) : IRequest<Response>;
     public class RequestValidator : AbstractValidator<Request>
     {
-        private const string MessagePrefix = "authenticate_";
+        private const string MessagePrefix = "authenticate_validation_";
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)

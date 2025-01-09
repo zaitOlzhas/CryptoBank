@@ -5,6 +5,7 @@ using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -22,13 +23,23 @@ public class SignUp
         {
             var response = await mediator.Send(request, cancellationToken);
             HttpContext.Response.StatusCode = 201;
-            //TODO: Consider handling response codes in handler
             return response;
         }
     }
 
     public record Request(string Email, string Password, DateOnly DateOfBirth) : IRequest<EmptyResponse>;
     public record EmptyResponse();
+    public class RequestValidator : AbstractValidator<Request>
+    {
+        private const string MessagePrefix = "sign_up_validation_";
+        public RequestValidator(CryptoBank_DbContext dbContext)
+        {
+            RuleFor(x => x.Email)
+                .NotEmpty().WithMessage(MessagePrefix + "email_empty");
+            RuleFor(x => x.Password)
+                .NotEmpty().WithMessage(MessagePrefix + "password_empty");
+        }
+    }
     public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs, Argon2IdPasswordHasher passwordHasher)
         : IRequestHandler<Request, EmptyResponse>
     {
@@ -36,13 +47,14 @@ public class SignUp
 
         public async Task<EmptyResponse> Handle(Request request, CancellationToken cancellationToken)
         {
+            ////TODO: Надо ли проверять конфликт в валидаторе?
             var user = await dbContext.Users
                 .Where(x => x.Email == request.Email.ToLower())
-                .AnyAsync();
+                .AnyAsync(cancellationToken);
             
             if (user)
                 throw new Exception("This email is already in use!");
-            //TODO: Add http code 409 for conflict emails
+            
             var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) ? UserRole.Administrator : UserRole.User;
             var userEntity = new Domain.User
             {
