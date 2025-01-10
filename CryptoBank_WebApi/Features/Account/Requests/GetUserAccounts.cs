@@ -18,12 +18,11 @@ public class GetUserAccounts
 {
     [HttpGet("/user-accounts")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor)
-        : EndpointWithoutRequest<AccountModel[]>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<AccountModel[]>
     {
         public override async Task<AccountModel[]> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = contextAccessor.HttpContext!.User;
+            var principal = this.HttpContext.User;
             var email = principal.GetClaim(ClaimTypes.Email);
             var request = new GetAccountsRequest(email);
             var response = await mediator.Send(request, cancellationToken);

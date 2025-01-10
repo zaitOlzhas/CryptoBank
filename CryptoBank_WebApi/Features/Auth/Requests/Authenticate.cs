@@ -24,7 +24,6 @@ public class Authenticate
     [AllowAnonymous]
     public class Endpoint(
         IMediator mediator,
-        IHttpContextAccessor httpContextAccessor,
         IOptions<AuthConfigurations> authConfigs)
         : Endpoint<Request, EndpointResponse>
     {
@@ -39,7 +38,7 @@ public class Authenticate
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
-            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.Token, cookie);
+            this.HttpContext.Response.Cookies.Append("RefreshToken", response.Token, cookie);
 
             return new EndpointResponse(response.Jwt);
         }

@@ -20,12 +20,11 @@ public class GetUserProfile
 {
     [HttpGet("/user-profile")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor)
-        : EndpointWithoutRequest<Response>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = httpContextAccessor.HttpContext!.User;
+            var principal = this.HttpContext.User;
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
                 throw new Exception("Missing email from auth token");
 

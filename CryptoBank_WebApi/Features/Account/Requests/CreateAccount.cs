@@ -18,11 +18,11 @@ public class CreateAccount
 {
     [HttpPost("/create-account")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor) : EndpointWithoutRequest<Response>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = contextAccessor.HttpContext!.User;
+            var principal = this.HttpContext.User;
             var email = principal.GetClaim(ClaimTypes.Email);
             var request = new Request(email);
             return await mediator.Send(request, cancellationToken);

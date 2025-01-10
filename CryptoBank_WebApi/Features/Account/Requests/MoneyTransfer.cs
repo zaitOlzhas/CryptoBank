@@ -15,12 +15,11 @@ public class MoneyTransfer
 {
     [HttpPost("/money-transfer")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor)
-        : Endpoint<EndPointRequest, Response>
+    public class Endpoint(IMediator mediator) : Endpoint<EndPointRequest, Response>
     {
         public override async Task<Response> ExecuteAsync(EndPointRequest request, CancellationToken ct)
         {
-            var principal = contextAccessor.HttpContext!.User;
+            var principal = this.HttpContext.User;
             var email = principal.GetClaim(ClaimTypes.Email);
             var cqrsRequest = new Request
             {

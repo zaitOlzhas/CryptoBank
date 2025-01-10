@@ -22,18 +22,17 @@ public class RefreshToken
     [AllowAnonymous]
     public class Endpoint(
         IMediator mediator,
-        IHttpContextAccessor httpContextAccessor,
         IOptions<AuthConfigurations> authConfigs) : EndpointWithoutRequest<EndpointResponse>
     {
         public override async Task<EndpointResponse> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var refreshToken = httpContextAccessor.HttpContext!.Request.Cookies["RefreshToken"];
-            var principal = httpContextAccessor.HttpContext!.User;
+            this.HttpContext.Request.Cookies.TryGetValue("RefreshToken", out var refreshToken);
+            var principal = this.HttpContext.User;
 
             if (refreshToken is null)
                 throw new Exception("Missing refresh token");
 
-            if (principal.HasClaim(x => x.Type == ClaimTypes.Email))
+            if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
                 throw new Exception("Missing email claim in token");
 
             var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
@@ -50,7 +49,7 @@ public class RefreshToken
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
-            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.RefreshToken, cookie);
+            this.HttpContext.Response.Cookies.Append("RefreshToken", response.RefreshToken, cookie);
 
             return new EndpointResponse(response.Jwt);
         }
