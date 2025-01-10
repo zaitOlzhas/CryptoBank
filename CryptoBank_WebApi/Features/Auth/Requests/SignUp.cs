@@ -28,10 +28,13 @@ public class SignUp
     }
 
     public record Request(string Email, string Password, DateOnly DateOfBirth) : IRequest<EmptyResponse>;
+
     public record EmptyResponse();
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "sign_up_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
@@ -40,7 +43,11 @@ public class SignUp
                 .NotEmpty().WithMessage(MessagePrefix + "password_empty");
         }
     }
-    public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AuthConfigurations> authConfigs, Argon2IdPasswordHasher passwordHasher)
+
+    public class RequestHandler(
+        CryptoBank_DbContext dbContext,
+        IOptions<AuthConfigurations> authConfigs,
+        Argon2IdPasswordHasher passwordHasher)
         : IRequestHandler<Request, EmptyResponse>
     {
         private readonly AuthConfigurations _authConfigs = authConfigs.Value;
@@ -51,11 +58,13 @@ public class SignUp
             var user = await dbContext.Users
                 .Where(x => x.Email == request.Email.ToLower())
                 .AnyAsync(cancellationToken);
-            
+
             if (user)
                 throw new Exception("This email is already in use!");
-            
-            var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase) ? UserRole.Administrator : UserRole.User;
+
+            var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)
+                ? UserRole.Administrator
+                : UserRole.User;
             var userEntity = new Domain.User
             {
                 Email = request.Email.ToLower(),
@@ -64,10 +73,10 @@ public class SignUp
                 RegistrationDate = DateTime.Now.SetKindUtc(),
                 Role = role.ToString()
             };
-            
+
             await dbContext.Users.AddAsync(userEntity, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
-            
+
             return new EmptyResponse();
         }
     }

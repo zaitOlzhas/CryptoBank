@@ -30,10 +30,12 @@ builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 builder.Services.AddDbContext<CryptoBank_DbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("CryptoBank_DbContext")));
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => {
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
     var jwtOptions = builder.Configuration.GetSection("Features:Auth").Get<AuthConfigurations>()!.Jwt;
 
-    options.TokenValidationParameters = new TokenValidationParameters {
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
@@ -49,7 +51,8 @@ builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(PolicyNames.UserRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.User)));
     options.AddPolicy(PolicyNames.AnalystRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Analyst)));
-    options.AddPolicy(PolicyNames.AdministratorRole, policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
+    options.AddPolicy(PolicyNames.AdministratorRole,
+        policy => policy.AddRequirements(new RoleRequirement(UserRole.Administrator)));
 });
 
 builder.Services.AddSingleton<Dispatcher>();
@@ -67,8 +70,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  
 }
+
 app.MapProblemDetailsComplete();
 app.MapGet("/health", async (context) =>
 {

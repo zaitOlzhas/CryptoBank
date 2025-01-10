@@ -13,6 +13,7 @@ public class AuthConfigurations
         public TimeSpan Expiration { get; set; }
         public TimeSpan RefreshTokenExpiration { get; set; }
     }
+
     public class Administator
     {
         public required string Email { get; set; }

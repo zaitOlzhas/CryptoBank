@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CryptoBank_WebApi.Errors.Extensions;
+
 public static class ApplicationBuilderExtensions
 {
     public static IApplicationBuilder MapProblemDetailsComplete(this IApplicationBuilder app)
@@ -29,7 +30,8 @@ public static class ApplicationBuilderExtensions
                             Status = StatusCodes.Status400BadRequest,
                         };
 
-                        validationProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? context.TraceIdentifier);
+                        validationProblemDetails.Extensions.Add("traceId",
+                            Activity.Current?.Id ?? context.TraceIdentifier);
 
                         validationProblemDetails.Extensions["errors"] = validationErrorsException.Errors
                             .Select(x => new ErrorDataWithCode(x.Field, x.Message, x.Code));
@@ -49,7 +51,8 @@ public static class ApplicationBuilderExtensions
                             Status = StatusCodes.Status422UnprocessableEntity,
                         };
 
-                        logicConflictProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? context.TraceIdentifier);
+                        logicConflictProblemDetails.Extensions.Add("traceId",
+                            Activity.Current?.Id ?? context.TraceIdentifier);
 
                         logicConflictProblemDetails.Extensions["code"] = logicConflictException.Code;
 
@@ -67,7 +70,8 @@ public static class ApplicationBuilderExtensions
                             Status = StatusCodes.Status504GatewayTimeout,
                         };
 
-                        operationCanceledProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? context.TraceIdentifier);
+                        operationCanceledProblemDetails.Extensions.Add("traceId",
+                            Activity.Current?.Id ?? context.TraceIdentifier);
 
                         context.Response.ContentType = "application/problem+json";
                         context.Response.StatusCode = StatusCodes.Status504GatewayTimeout;
@@ -101,7 +105,8 @@ public static class ApplicationBuilderExtensions
                             Status = StatusCodes.Status500InternalServerError,
                         };
 
-                        internalErrorProblemDetails.Extensions.Add("traceId", Activity.Current?.Id ?? context.TraceIdentifier);
+                        internalErrorProblemDetails.Extensions.Add("traceId",
+                            Activity.Current?.Id ?? context.TraceIdentifier);
 
                         context.Response.ContentType = "application/problem+json";
                         context.Response.StatusCode = StatusCodes.Status500InternalServerError;
@@ -116,11 +121,8 @@ public static class ApplicationBuilderExtensions
     }
 }
 
-internal record ErrorData(
-    [property: JsonPropertyName("field")] string Field,
-    [property: JsonPropertyName("message")] string Message);
-
 internal record ErrorDataWithCode(
     [property: JsonPropertyName("field")] string Field,
-    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("message")]
+    string Message,
     [property: JsonPropertyName("code")] string Code);

@@ -3,13 +3,13 @@ using CryptoBank_WebApi.Database;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using static CryptoBank_WebApi.Errors.Codes.CommonValidationErrors;
-namespace CryptoBank_WebApi.Validation;
 
+namespace CryptoBank_WebApi.Validation;
 
 public static class RuleBuilderOptionsExtensions
 {
     public static IRuleBuilderOptions<T, string> ValidateAccountNumber<T>(this IRuleBuilder<T, string> builder,
-        string prefix, 
+        string prefix,
         CryptoBank_DbContext context)
     {
         return builder
@@ -19,7 +19,7 @@ public static class RuleBuilderOptionsExtensions
             .WithErrorCode(prefix + AccountNumberDoesNotExist);
     }
 
-    public static IRuleBuilderOptions<T, string?> ValidateEmail<T>(this IRuleBuilder<T, string?> builder, 
+    public static IRuleBuilderOptions<T, string?> ValidateEmail<T>(this IRuleBuilder<T, string?> builder,
         string prefix,
         CryptoBank_DbContext context)
     {

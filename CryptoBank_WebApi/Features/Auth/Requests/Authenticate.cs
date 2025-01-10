@@ -22,13 +22,16 @@ public class Authenticate
 {
     [HttpPost("/auth")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
+    public class Endpoint(
+        IMediator mediator,
+        IHttpContextAccessor httpContextAccessor,
+        IOptions<AuthConfigurations> authConfigs)
         : Endpoint<Request, EndpointResponse>
     {
         public override async Task<EndpointResponse> ExecuteAsync(Request request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(request, cancellationToken);
-            
+
             var cookie = new CookieOptions
             {
                 HttpOnly = true,
@@ -37,31 +40,36 @@ public class Authenticate
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
             httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.Token, cookie);
-            
+
             return new EndpointResponse(response.Jwt);
         }
     }
-    
+
     public record Request(string Email, string Password) : IRequest<Response>;
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "authenticate_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix, dbContext);
         }
     }
+
     public record Response(string Jwt, string Token);
+
     public record EndpointResponse(string Jwt);
-    
+
     public class RequestHandler : IRequestHandler<Request, Response>
     {
         private readonly CryptoBank_DbContext _dbContext;
         private readonly Argon2IdPasswordHasher _paswordHasher;
         private readonly TokenGenerator _jwtTokenGenerator;
 
-        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator)
+        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher,
+            TokenGenerator jwtTokenGenerator)
         {
             _dbContext = dbContext;
             _paswordHasher = paswordHasher;
@@ -89,13 +97,14 @@ public class Authenticate
             {
                 { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.User]),
                 { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.Analyst]),
-                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.Administrator, UserRole.User
+                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, [
+                    UserRole.Administrator, UserRole.User
                 ]),
                 _ => throw new Exception("Invalid user role in DB.")
             };
-            
+
             var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
-            
+
             return new Response(jwt, refreshToken.Token);
         }
     }

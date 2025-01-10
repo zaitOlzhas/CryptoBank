@@ -20,33 +20,38 @@ public class GetUserProfile
 {
     [HttpGet("/user-profile")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor) : EndpointWithoutRequest<Response>
+    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor)
+        : EndpointWithoutRequest<Response>
     {
         public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
             var principal = httpContextAccessor.HttpContext!.User;
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
                 throw new Exception("Missing email from auth token");
-            
+
             var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var request = new Request(email);
             var response = await mediator.Send(request, cancellationToken);
             return response;
         }
     }
-    
+
     public record Request(string? Email) : IRequest<Response>;
+
     public record Response(UserModel UserProfile);
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "get_user_profile_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix, dbContext);
         }
     }
-    public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request ,Response>
+
+    public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {

@@ -4,8 +4,6 @@ using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Account.Configurations;
 using CryptoBank_WebApi.Features.Account.Model;
-using CryptoBank_WebApi.Features.Auth.Model;
-using CryptoBank_WebApi.Migrations;
 using CryptoBank_WebApi.Validation;
 using FastEndpoints;
 using FluentValidation;
@@ -22,7 +20,7 @@ public class CreateAccount
     [Authorize]
     public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor) : EndpointWithoutRequest<Response>
     {
-        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken) 
+        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
             var principal = contextAccessor.HttpContext!.User;
             var email = principal.GetClaim(ClaimTypes.Email);
@@ -30,17 +28,22 @@ public class CreateAccount
             return await mediator.Send(request, cancellationToken);
         }
     }
+
     public record Request(string? Email) : IRequest<Response>;
+
     public record Response(AccountModel Account);
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "create_account_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix, dbContext);
         }
     }
+
     public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AccountConfigurations> authConfigs)
         : IRequestHandler<Request, Response>
     {

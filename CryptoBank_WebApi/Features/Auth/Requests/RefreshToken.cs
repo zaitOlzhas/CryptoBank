@@ -20,7 +20,9 @@ public class RefreshToken
 {
     [HttpGet("/refresh-token")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor, 
+    public class Endpoint(
+        IMediator mediator,
+        IHttpContextAccessor httpContextAccessor,
         IOptions<AuthConfigurations> authConfigs) : EndpointWithoutRequest<EndpointResponse>
     {
         public override async Task<EndpointResponse> ExecuteAsync(CancellationToken cancellationToken)
@@ -30,12 +32,13 @@ public class RefreshToken
 
             if (refreshToken is null)
                 throw new Exception("Missing refresh token");
-            
+
             if (principal.HasClaim(x => x.Type == ClaimTypes.Email))
                 throw new Exception("Missing email claim in token");
 
             var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
-            var roles = principal.Claims.Where(x => x.Type == ClaimTypes.Role).Select(x => Enum.Parse<UserRole>(x.Value))
+            var roles = principal.Claims.Where(x => x.Type == ClaimTypes.Role)
+                .Select(x => Enum.Parse<UserRole>(x.Value))
                 .ToArray();
             var request = new Request(refreshToken, email, roles);
             var response = await mediator.Send(request, cancellationToken);
@@ -54,11 +57,15 @@ public class RefreshToken
     }
 
     public record Request(string RefreshToken, string? Email, UserRole[] Roles) : IRequest<Response>;
+
     public record Response(string Jwt, string RefreshToken);
+
     public record EndpointResponse(string Jwt);
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "refresh_token_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
@@ -70,7 +77,7 @@ public class RefreshToken
         }
     }
 
-    public class RequestHandler(CryptoBank_DbContext dbContext, TokenGenerator jwtTokenGenerator) 
+    public class RequestHandler(CryptoBank_DbContext dbContext, TokenGenerator jwtTokenGenerator)
         : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
@@ -81,7 +88,7 @@ public class RefreshToken
                 .SingleOrDefaultAsync(cancellationToken);
             if (dbToken is null)
                 throw new Exception("Invalid refresh token");
-            
+
             var newToken = jwtTokenGenerator.GenerateJwt(request.Email!, request.Roles);
             var newRefreshToken = await jwtTokenGenerator.GenerateRefreshToken(dbToken.UserId, cancellationToken);
 

@@ -13,6 +13,7 @@ public class RoleRequirement : IAuthorizationRequirement
 
     public UserRole RequiredRole { get; }
 }
+
 public class RoleRequirementHandler : AuthorizationHandler<RoleRequirement>
 {
     protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, RoleRequirement requirement)

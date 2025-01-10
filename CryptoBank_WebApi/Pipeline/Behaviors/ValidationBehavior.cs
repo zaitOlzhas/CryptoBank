@@ -13,7 +13,8 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
         _validator = validator;
     }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next,
+        CancellationToken cancellationToken)
     {
         if (_validator is not null)
         {
@@ -21,7 +22,8 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
 
             if (!result.IsValid)
             {
-                var errors = result.Errors.Select(x => new RequestValidationError(x.PropertyName, x.ErrorMessage, x.ErrorCode));
+                var errors = result.Errors.Select(x =>
+                    new RequestValidationError(x.PropertyName, x.ErrorMessage, x.ErrorCode));
                 throw new ValidationErrorsException(errors);
             }
         }

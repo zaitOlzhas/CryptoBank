@@ -15,6 +15,7 @@ public class TokenGenerator
 {
     private readonly AuthConfigurations _authConfigs;
     private readonly CryptoBank_DbContext _dbContext;
+
     public TokenGenerator(IOptions<AuthConfigurations> authConfigs, CryptoBank_DbContext dbContext)
     {
         _authConfigs = authConfigs.Value;

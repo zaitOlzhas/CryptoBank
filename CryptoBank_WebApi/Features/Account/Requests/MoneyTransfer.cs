@@ -8,6 +8,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+
 namespace CryptoBank_WebApi.Features.Account.Requests;
 
 public class MoneyTransfer
@@ -34,21 +35,25 @@ public class MoneyTransfer
 
     public record EndPointRequest
     {
-        public required string SourceAccountNumber { get; set; } 
+        public required string SourceAccountNumber { get; set; }
         public required string DestinationAccountNumber { get; set; }
         public decimal Amount { get; set; }
     }
-    public record Request: IRequest<Response>
+
+    public record Request : IRequest<Response>
     {
         public required string SourceAccountNumber { get; init; }
         public required string DestinationAccountNumber { get; init; }
         public required decimal Amount { get; init; }
         public required string? Email { get; init; }
     }
+
     public record Response;
+
     public class RequestValidator : AbstractValidator<Request>
     {
         private const string MessagePrefix = "money_transfer_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
@@ -61,6 +66,7 @@ public class MoneyTransfer
                 .ValidateAmount(MessagePrefix);
         }
     }
+
     public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)

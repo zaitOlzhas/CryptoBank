@@ -7,7 +7,7 @@ namespace CryptoBank_WebApi.Common.Passwords;
 
 public class Argon2IdPasswordHasher
 {
-     private readonly Argon2IdOptions _options;
+    private readonly Argon2IdOptions _options;
 
     public Argon2IdPasswordHasher(IOptions<Argon2IdOptions> options)
     {
@@ -31,7 +31,8 @@ public class Argon2IdPasswordHasher
         var saltInBase64 = Convert.ToBase64String(saltBytes);
         var passwordHashInBase64 = Convert.ToBase64String(passwordHashBytes);
 
-        return $"argon2id$m={_options.MemorySize}$i={_options.Iterations}$p={_options.DegreeOfParallelism}${saltInBase64}${passwordHashInBase64}";
+        return
+            $"argon2id$m={_options.MemorySize}$i={_options.Iterations}$p={_options.DegreeOfParallelism}${saltInBase64}${passwordHashInBase64}";
     }
 
     public bool VerifyHashedPassword(string passwordHash, string password)

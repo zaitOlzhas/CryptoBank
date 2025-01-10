@@ -18,7 +18,8 @@ public class GetUserAccounts
 {
     [HttpGet("/user-accounts")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor) : EndpointWithoutRequest<AccountModel[]>
+    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor)
+        : EndpointWithoutRequest<AccountModel[]>
     {
         public override async Task<AccountModel[]> ExecuteAsync(CancellationToken cancellationToken)
         {
@@ -29,16 +30,20 @@ public class GetUserAccounts
             return response;
         }
     }
+
     public record GetAccountsRequest(string? Email) : IRequest<AccountModel[]>;
+
     public class RequestValidator : AbstractValidator<GetAccountsRequest>
     {
         private const string MessagePrefix = "get_user_accounts_validation_";
+
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix, dbContext);
         }
     }
+
     public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<GetAccountsRequest, AccountModel[]>
     {
         public async Task<AccountModel[]> Handle(GetAccountsRequest request, CancellationToken cancellationToken)

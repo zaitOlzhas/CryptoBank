@@ -23,6 +23,7 @@ public static class GetNews
             return response;
         }
     }
+
     [HttpGet("/adminnews")]
     [Authorize(Policy = PolicyNames.AdministratorRole)]
     public class Endpoint2(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
@@ -34,6 +35,7 @@ public static class GetNews
             return response;
         }
     }
+
     [HttpGet("/allnews")]
     [AllowAnonymous]
     public class Endpoint3(IMediator mediator) : EndpointWithoutRequest<NewsModel[]>
@@ -51,7 +53,8 @@ public static class GetNews
     public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<NewsConfigurations> configs)
         : IRequestHandler<GetNewsRequest, NewsModel[]>
     {
-        public async Task<NewsModel[]> Handle(GetNewsRequest request, CancellationToken cancellationToken) {
+        public async Task<NewsModel[]> Handle(GetNewsRequest request, CancellationToken cancellationToken)
+        {
             return await dbContext.News
                 .Select(x => new NewsModel
                 {
