@@ -48,9 +48,12 @@ public class GetUserAccounts
         public async Task<AccountModel[]> Handle(GetAccountsRequest request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users
-                .Where(x => x.Email == request.Email)
+                .Where(x => x.Email == request.Email!.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
-
+            
+            if (user is null)
+                throw new ValidationException("User not found by given email.");
+            
             var userAccounts = await dbContext.Accounts
                 .Where(x => x.UserId == user!.Id)
                 .Select(x => new AccountModel

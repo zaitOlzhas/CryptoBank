@@ -87,7 +87,13 @@ public class RefreshToken
                 .SingleOrDefaultAsync(cancellationToken);
             if (dbToken is null)
                 throw new Exception("Invalid refresh token");
-
+            
+            var user = await dbContext.Users
+                .Where(x => x.Email == request.Email!.ToLower())
+                .SingleOrDefaultAsync(cancellationToken);
+            if (user is null)
+                throw new ValidationException("User not found by given email.");
+            
             var newToken = jwtTokenGenerator.GenerateJwt(request.Email!, request.Roles);
             var newRefreshToken = await jwtTokenGenerator.GenerateRefreshToken(dbToken.UserId, cancellationToken);
 

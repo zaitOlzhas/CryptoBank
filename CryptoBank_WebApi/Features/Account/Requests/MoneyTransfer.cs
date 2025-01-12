@@ -74,6 +74,9 @@ public class MoneyTransfer
                 .Where(x => x.Email == request.Email!.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
 
+            if (user is null)
+                throw new ValidationException("User not found by given email.");
+            
             var sourceAccount = await dbContext.Accounts.FindAsync(request.SourceAccountNumber, cancellationToken);
 
             if (sourceAccount!.UserId != user!.Id)

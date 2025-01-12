@@ -50,9 +50,12 @@ public class CreateAccount
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users
-                .Where(x => x.Email == request.Email)
+                .Where(x => x.Email == request.Email!.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
-
+            
+            if (user is null)
+                throw new ValidationException("User not found by given email.");
+            
             var userAccountsCount = await dbContext.Accounts
                 .Where(x => x.UserId == user!.Id)
                 .CountAsync(cancellationToken);

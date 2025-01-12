@@ -88,7 +88,10 @@ public class Authenticate
                     }
                 )
                 .SingleOrDefaultAsync(cancellationToken);
-
+            
+            if (user is null)
+                throw new ValidationException("User not found by given email.");
+            
             if (!_paswordHasher.VerifyHashedPassword(user!.Password, request.Password))
                 throw new Exception("Invalid credentials");
 

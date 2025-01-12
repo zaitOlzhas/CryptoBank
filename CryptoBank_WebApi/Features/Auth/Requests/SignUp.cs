@@ -60,7 +60,7 @@ public class SignUp
                 .AnyAsync(cancellationToken);
 
             if (user)
-                throw new Exception("This email is already in use!");
+                throw new ValidationException("This email is already in use!");
 
             var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)
                 ? UserRole.Administrator

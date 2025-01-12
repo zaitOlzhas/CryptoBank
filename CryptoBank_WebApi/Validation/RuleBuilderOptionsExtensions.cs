@@ -26,7 +26,6 @@ public static class RuleBuilderOptionsExtensions
         return builder
             .NotEmpty().WithErrorCode(prefix + EmailRequired)
             .Matches(@"^[^@\s]+@[^@\s]+\.[^@\s]+$").WithErrorCode(prefix + EmailInvalid)
-            .MustAsync(async (email, ct) => await context.Users.AnyAsync(x => x.Email == email, ct))
             .WithErrorCode(prefix + EmailDoesNotExist);
     }
 

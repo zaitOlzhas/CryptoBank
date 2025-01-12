@@ -28,9 +28,6 @@ public class SetUserRole
             RuleFor(x => x.Role)
                 .Must(x => Enum.TryParse<Auth.Domain.UserRole>(x, out _))
                 .WithErrorCode(MessagePrefix + "role_invalid");
-            RuleFor(x => x.UserId)
-                .MustAsync(async (id, ct) => await dbContext.Users.FindAsync(id, ct) is not null)
-                .WithErrorCode(MessagePrefix + "user_not_found");
         }
     }
 
@@ -39,7 +36,8 @@ public class SetUserRole
         public async Task<EmptyResponse> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users.FindAsync(request.UserId, cancellationToken);
-
+            if(user is null)
+                throw new ValidationException("User with provided id not found.");
             user!.Role = request.Role;
 
             await dbContext.SaveChangesAsync(cancellationToken);

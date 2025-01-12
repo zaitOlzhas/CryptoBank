@@ -13,6 +13,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using ValidationException = System.ComponentModel.DataAnnotations.ValidationException;
 
 namespace CryptoBank_WebApi.Features.User.Requests;
 
@@ -26,7 +27,7 @@ public class GetUserProfile
         {
             var principal = this.HttpContext.User;
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
-                throw new Exception("Missing email from auth token");
+                throw new ValidationException("Missing email from auth token");
 
             var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var request = new Request(email);
@@ -69,7 +70,7 @@ public class GetUserProfile
                 ).SingleOrDefaultAsync(cancellationToken);
 
             if (user is null)
-                throw new Exception("User not found");
+                throw new ValidationException("User not found");
 
             return new Response(user);
         }
