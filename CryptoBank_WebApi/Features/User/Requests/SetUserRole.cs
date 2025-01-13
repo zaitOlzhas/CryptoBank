@@ -24,7 +24,7 @@ public class SetUserRole
     {
         private const string MessagePrefix = "set_user_role_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Role)
                 .Must(x => Enum.TryParse<Auth.Domain.UserRole>(x, out _))

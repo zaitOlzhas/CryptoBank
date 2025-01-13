@@ -37,7 +37,7 @@ public class GetUserProfile
     {
         private const string MessagePrefix = "get_user_profile_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix);

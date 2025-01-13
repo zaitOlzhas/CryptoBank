@@ -37,7 +37,7 @@ public class CreateAccount
     {
         private const string MessagePrefix = "create_account_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix);

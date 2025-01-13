@@ -51,7 +51,7 @@ public class Authenticate
     {
         private const string MessagePrefix = "authenticate_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix);

@@ -36,7 +36,7 @@ public class SignUp
     {
         private const string MessagePrefix = "sign_up_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Email)
                 .NotEmpty().WithMessage(MessagePrefix + "email_empty");
