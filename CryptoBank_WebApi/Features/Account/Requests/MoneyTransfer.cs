@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Account.Domain;
 using CryptoBank_WebApi.Validation;
 using FastEndpoints;
@@ -56,7 +57,7 @@ public class MoneyTransfer
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
-                .ValidateEmail(MessagePrefix, dbContext);
+                .ValidateEmail(MessagePrefix);
             RuleFor(x => x.SourceAccountNumber)
                 .ValidateAccountNumber(MessagePrefix + "source_", dbContext);
             RuleFor(x => x.DestinationAccountNumber)
@@ -75,8 +76,8 @@ public class MoneyTransfer
                 .SingleOrDefaultAsync(cancellationToken);
 
             if (user is null)
-                throw new ValidationException("User not found by given email.");
-            
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","money_transfer_validation_user_not_found");
+
             var sourceAccount = await dbContext.Accounts.FindAsync(request.SourceAccountNumber, cancellationToken);
 
             if (sourceAccount!.UserId != user!.Id)

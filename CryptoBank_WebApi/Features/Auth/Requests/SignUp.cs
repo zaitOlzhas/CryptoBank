@@ -1,6 +1,7 @@
 using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
@@ -60,7 +61,7 @@ public class SignUp
                 .AnyAsync(cancellationToken);
 
             if (user)
-                throw new ValidationException("This email is already in use!");
+                throw new ValidationErrorsException(nameof(request.Email), "This email is already in use!", "sign_up_validation_email_conflict");
 
             var role = _authConfigs.Admin.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase)
                 ? UserRole.Administrator

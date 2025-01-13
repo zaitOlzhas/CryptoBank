@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -30,11 +31,11 @@ public class RefreshToken
             var principal = this.HttpContext.User;
 
             if (refreshToken is null)
-                throw new Exception("Missing refresh token");
+                throw new ValidationErrorsException("RefreshToken", "Missing refresh token","refresh_token_validation_refresh_token_empty");
 
             if (!principal.HasClaim(x => x.Type == ClaimTypes.Email))
-                throw new Exception("Missing email claim in token");
-
+                throw new ValidationErrorsException("Email", "Missing email from auth token","refresh_token_validation_email_empty");
+            
             var email = principal.Claims.SingleOrDefault(x => x.Type == ClaimTypes.Email)?.Value;
             var roles = principal.Claims.Where(x => x.Type == ClaimTypes.Role)
                 .Select(x => Enum.Parse<UserRole>(x.Value))
@@ -68,7 +69,7 @@ public class RefreshToken
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
-                .ValidateEmail(MessagePrefix, dbContext);
+                .ValidateEmail(MessagePrefix);
             RuleFor(x => x.RefreshToken)
                 .NotEmpty().WithMessage(MessagePrefix + "refresh_token_empty");
             RuleFor(x => x.Roles)
@@ -86,14 +87,14 @@ public class RefreshToken
                 .Where(x => x.Token == request.RefreshToken)
                 .SingleOrDefaultAsync(cancellationToken);
             if (dbToken is null)
-                throw new Exception("Invalid refresh token");
-            
+                throw new ValidationErrorsException(nameof(request.RefreshToken), "Refresh token not found.","refresh_token_validation_token_not_found");
+
             var user = await dbContext.Users
                 .Where(x => x.Email == request.Email!.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
             if (user is null)
-                throw new ValidationException("User not found by given email.");
-            
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","refresh_token_validation_user_not_found");
+
             var newToken = jwtTokenGenerator.GenerateJwt(request.Email!, request.Roles);
             var newRefreshToken = await jwtTokenGenerator.GenerateRefreshToken(dbToken.UserId, cancellationToken);
 

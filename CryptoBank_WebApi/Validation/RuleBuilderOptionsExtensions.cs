@@ -20,8 +20,7 @@ public static class RuleBuilderOptionsExtensions
     }
 
     public static IRuleBuilderOptions<T, string?> ValidateEmail<T>(this IRuleBuilder<T, string?> builder,
-        string prefix,
-        CryptoBank_DbContext context)
+        string prefix)
     {
         return builder
             .NotEmpty().WithErrorCode(prefix + EmailRequired)

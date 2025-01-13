@@ -1,5 +1,6 @@
 using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using FastEndpoints;
 using FluentValidation;
 using MediatR;
@@ -36,8 +37,9 @@ public class SetUserRole
         public async Task<EmptyResponse> Handle(Request request, CancellationToken cancellationToken)
         {
             var user = await dbContext.Users.FindAsync(request.UserId, cancellationToken);
-            if(user is null)
-                throw new ValidationException("User with provided id not found.");
+            if (user is null)
+                throw new ValidationErrorsException(nameof(request.UserId), "User not found by given Id.","set_user_role_validation_user_not_found");
+
             user!.Role = request.Role;
 
             await dbContext.SaveChangesAsync(cancellationToken);

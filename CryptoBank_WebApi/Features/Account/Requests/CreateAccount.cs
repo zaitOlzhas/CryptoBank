@@ -40,7 +40,7 @@ public class CreateAccount
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
-                .ValidateEmail(MessagePrefix, dbContext);
+                .ValidateEmail(MessagePrefix);
         }
     }
 
@@ -54,8 +54,8 @@ public class CreateAccount
                 .SingleOrDefaultAsync(cancellationToken);
             
             if (user is null)
-                throw new ValidationException("User not found by given email.");
-            
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","create_account_validation_user_not_found");
+
             var userAccountsCount = await dbContext.Accounts
                 .Where(x => x.UserId == user!.Id)
                 .CountAsync(cancellationToken);

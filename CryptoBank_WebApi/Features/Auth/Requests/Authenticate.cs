@@ -3,6 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
@@ -53,7 +54,7 @@ public class Authenticate
         public RequestValidator(CryptoBank_DbContext dbContext)
         {
             RuleFor(x => x.Email)
-                .ValidateEmail(MessagePrefix, dbContext);
+                .ValidateEmail(MessagePrefix);
         }
     }
 
@@ -90,7 +91,7 @@ public class Authenticate
                 .SingleOrDefaultAsync(cancellationToken);
             
             if (user is null)
-                throw new ValidationException("User not found by given email.");
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","authenticate_user_email_not_found");
             
             if (!_paswordHasher.VerifyHashedPassword(user!.Password, request.Password))
                 throw new Exception("Invalid credentials");
