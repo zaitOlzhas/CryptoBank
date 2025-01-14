@@ -24,6 +24,7 @@ public class GetAccountReport
         public DateOnly StartDate { get; set; }
         public DateOnly EndDate { get; set; }
     }
+
     public class RequestHandler(CryptoBank_DbContext dbContext) : IRequestHandler<Request, string[]>
     {
         public async Task<string[]> Handle(Request request, CancellationToken cancellationToken)

@@ -1,11 +1,12 @@
 using System.Security.Claims;
 using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Account.Configurations;
 using CryptoBank_WebApi.Features.Account.Model;
-using CryptoBank_WebApi.Features.Auth.Model;
-using CryptoBank_WebApi.Migrations;
+using CryptoBank_WebApi.Validation;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -17,42 +18,55 @@ public class CreateAccount
 {
     [HttpPost("/create-account")]
     [Authorize]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor contextAccessor) : EndpointWithoutRequest<Response>
+    public class Endpoint(IMediator mediator) : EndpointWithoutRequest<Response>
     {
-        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken) 
+        public override async Task<Response> ExecuteAsync(CancellationToken cancellationToken)
         {
-            var principal = contextAccessor.HttpContext!.User;
-            var request = new Request(principal);
+            var principal = this.HttpContext.User;
+            var email = principal.GetClaim(ClaimTypes.Email);
+            var request = new Request(email);
             return await mediator.Send(request, cancellationToken);
         }
     }
-    public record Request(ClaimsPrincipal Principal) : IRequest<Response>;
+
+    public record Request(string? Email) : IRequest<Response>;
+
     public record Response(AccountModel Account);
+
+    public class RequestValidator : AbstractValidator<Request>
+    {
+        private const string MessagePrefix = "create_account_validation_";
+
+        public RequestValidator()
+        {
+            RuleFor(x => x.Email)
+                .ValidateEmail(MessagePrefix);
+        }
+    }
 
     public class RequestHandler(CryptoBank_DbContext dbContext, IOptions<AccountConfigurations> authConfigs)
         : IRequestHandler<Request, Response>
     {
         public async Task<Response> Handle(Request request, CancellationToken cancellationToken)
         {
-            var email = request.Principal.GetClaim(ClaimTypes.Email);
-            if(string.IsNullOrWhiteSpace(email)) throw new Exception("Invalid user");
             var user = await dbContext.Users
-                .Where(x => x.Email == email)
+                .Where(x => x.Email == request.Email!.ToLower())
                 .SingleOrDefaultAsync(cancellationToken);
+            
             if (user is null)
-                throw new Exception("Invalid user");
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","create_account_validation_user_not_found");
 
             var userAccountsCount = await dbContext.Accounts
-                .Where(x => x.UserId == user.Id)
+                .Where(x => x.UserId == user!.Id)
                 .CountAsync(cancellationToken);
 
             if (userAccountsCount >= authConfigs.Value.AccountLimitPerUser)
-                throw new Exception("Account limit reached");
+                throw new LogicConflictException("Account limit reached.", "user_account_limit_reached");
 
             var account = new Domain.Account()
             {
                 Currency = "USD",
-                UserId = user.Id
+                UserId = user!.Id
             };
 
             var newAccount = await dbContext.Accounts.AddAsync(account, cancellationToken);

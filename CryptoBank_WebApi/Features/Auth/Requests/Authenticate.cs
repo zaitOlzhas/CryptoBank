@@ -3,11 +3,14 @@ using System.Security.Claims;
 using System.Text;
 using CryptoBank_WebApi.Common.Passwords;
 using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.Auth.Model;
+using CryptoBank_WebApi.Validation;
 using FastEndpoints;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -20,13 +23,15 @@ public class Authenticate
 {
     [HttpPost("/auth")]
     [AllowAnonymous]
-    public class Endpoint(IMediator mediator, IHttpContextAccessor httpContextAccessor, IOptions<AuthConfigurations> authConfigs) 
+    public class Endpoint(
+        IMediator mediator,
+        IOptions<AuthConfigurations> authConfigs)
         : Endpoint<Request, EndpointResponse>
     {
         public override async Task<EndpointResponse> ExecuteAsync(Request request, CancellationToken cancellationToken)
         {
             var response = await mediator.Send(request, cancellationToken);
-            
+
             var cookie = new CookieOptions
             {
                 HttpOnly = true,
@@ -34,23 +39,37 @@ public class Authenticate
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTime.UtcNow.Add(authConfigs.Value.Jwt.RefreshTokenExpiration)
             };
-            httpContextAccessor.HttpContext?.Response.Cookies.Append("RefreshToken", response.Token, cookie);
-            
+            this.HttpContext.Response.Cookies.Append("RefreshToken", response.Token, cookie);
+
             return new EndpointResponse(response.Jwt);
         }
     }
-    
+
     public record Request(string Email, string Password) : IRequest<Response>;
+
+    public class RequestValidator : AbstractValidator<Request>
+    {
+        private const string MessagePrefix = "authenticate_validation_";
+
+        public RequestValidator()
+        {
+            RuleFor(x => x.Email)
+                .ValidateEmail(MessagePrefix);
+        }
+    }
+
     public record Response(string Jwt, string Token);
+
     public record EndpointResponse(string Jwt);
-    
+
     public class RequestHandler : IRequestHandler<Request, Response>
     {
         private readonly CryptoBank_DbContext _dbContext;
         private readonly Argon2IdPasswordHasher _paswordHasher;
         private readonly TokenGenerator _jwtTokenGenerator;
 
-        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher, TokenGenerator jwtTokenGenerator)
+        public RequestHandler(CryptoBank_DbContext dbContext, Argon2IdPasswordHasher paswordHasher,
+            TokenGenerator jwtTokenGenerator)
         {
             _dbContext = dbContext;
             _paswordHasher = paswordHasher;
@@ -70,23 +89,25 @@ public class Authenticate
                     }
                 )
                 .SingleOrDefaultAsync(cancellationToken);
-
+            
             if (user is null)
-                throw new Exception("Invalid credentials");
-
-            if (!_paswordHasher.VerifyHashedPassword(user.Password, request.Password))
+                throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","authenticate_user_email_not_found");
+            
+            if (!_paswordHasher.VerifyHashedPassword(user!.Password, request.Password))
                 throw new Exception("Invalid credentials");
 
             var jwt = user switch
             {
-                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.User }),
-                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Analyst }),
-                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, new[] { UserRole.Administrator, UserRole.User }),
+                { Role: "User" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.User]),
+                { Role: "Analyst" } => _jwtTokenGenerator.GenerateJwt(user.Email, [UserRole.Analyst]),
+                { Role: "Administrator" } => _jwtTokenGenerator.GenerateJwt(user.Email, [
+                    UserRole.Administrator, UserRole.User
+                ]),
                 _ => throw new Exception("Invalid user role in DB.")
             };
-            
+
             var refreshToken = await _jwtTokenGenerator.GenerateRefreshToken(user.Id, cancellationToken);
-            
+
             return new Response(jwt, refreshToken.Token);
         }
     }

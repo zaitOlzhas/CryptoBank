@@ -16,8 +16,8 @@ public class CryptoBank_DbContext : DbContext
 
     public CryptoBank_DbContext(DbContextOptions<CryptoBank_DbContext> options) : base(options)
     {
-        
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -45,6 +45,7 @@ public class CryptoBank_DbContext : DbContext
                 .IsRequired();
         });
     }
+
     private void MapAccount(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(account =>
@@ -54,7 +55,7 @@ public class CryptoBank_DbContext : DbContext
                 .HasMaxLength(36)
                 .HasDefaultValueSql("gen_random_uuid()")
                 .ValueGeneratedOnAdd();
-            
+
             account.Property(x => x.Currency)
                 .IsRequired();
 
@@ -106,6 +107,7 @@ public class CryptoBank_DbContext : DbContext
                 .IsRequired();
         });
     }
+
     private void MapUser(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>(user =>
@@ -120,16 +122,16 @@ public class CryptoBank_DbContext : DbContext
 
             user.Property(x => x.Role)
                 .IsRequired();
-            
+
             user.Property(x => x.DateOfBirth)
                 .IsRequired();
-            
+
             user.Property(x => x.RegistrationDate)
                 .IsRequired();
-            
+
             user.Property(x => x.FirstName)
                 .IsRequired(false);
-            
+
             user.Property(x => x.LastName)
                 .IsRequired(false);
         });
