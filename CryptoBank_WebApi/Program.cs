@@ -83,3 +83,5 @@ app.UseAuthorization();
 app.MapFastEndpoints();
 app.MapGet("/dictionary/user-roles", () => Enum.GetNames<UserRole>());
 app.Run();
+
+public partial class Program { }
