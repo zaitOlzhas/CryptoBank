@@ -66,7 +66,7 @@ public class RefreshToken
     {
         private const string MessagePrefix = "refresh_token_validation_";
 
-        public RequestValidator(CryptoBank_DbContext dbContext)
+        public RequestValidator()
         {
             RuleFor(x => x.Email)
                 .ValidateEmail(MessagePrefix);

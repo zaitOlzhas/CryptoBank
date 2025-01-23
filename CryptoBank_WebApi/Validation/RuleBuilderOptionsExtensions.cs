@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using CryptoBank_WebApi.Database;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;

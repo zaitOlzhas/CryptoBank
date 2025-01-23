@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 namespace CryptoBank_Tests.Features.News.Requests;
 
 public class GetNews(CustomWebApplicationFactory<Program> factory) : IClassFixture<CustomWebApplicationFactory<Program>>
@@ -14,9 +16,9 @@ public class GetNews(CustomWebApplicationFactory<Program> factory) : IClassFixtu
 
         // Assert
         response.EnsureSuccessStatusCode(); 
-
-        var news = await response.DeserializeContent<CryptoBank_WebApi.Features.News.Domain.News[]>();
-        Assert.Equal(newsCount, news.Length);
+        var responseString = await response.Content.ReadAsStringAsync();
+        var news = JsonConvert.DeserializeObject<CryptoBank_WebApi.Features.News.Domain.News[]>(responseString);
+        Assert.Equal(newsCount, news?.Length);
         Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType!.ToString());
     }
 }

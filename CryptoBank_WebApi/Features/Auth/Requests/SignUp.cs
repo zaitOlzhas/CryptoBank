@@ -4,7 +4,6 @@ using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Auth.Configurations;
 using CryptoBank_WebApi.Features.Auth.Domain;
-using CryptoBank_WebApi.Features.Auth.Model;
 using FastEndpoints;
 using FluentValidation;
 using MediatR;
@@ -30,7 +29,7 @@ public class SignUp
 
     public record Request(string Email, string Password, DateOnly DateOfBirth) : IRequest<EmptyResponse>;
 
-    public record EmptyResponse();
+    public record EmptyResponse;
 
     public class RequestValidator : AbstractValidator<Request>
     {

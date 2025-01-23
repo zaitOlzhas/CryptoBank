@@ -1,5 +1,7 @@
 using System.Net.Http.Headers;
+using CryptoBank_WebApi.Features.Auth.Model;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace CryptoBank_Tests.Features.User.Requests;
 
@@ -21,9 +23,9 @@ public class GetUserProfile(CustomWebApplicationFactory<Program> factory)
 
         // Assert
         response.EnsureSuccessStatusCode(); // Status Code 200-299
-        //var user = await response.DeserializeContent<UserModel>().ConfigureAwait(false);
-        //Assert.NotNull(user);
-        //TODO: Найти причину почему не десериализуется. Объект приходит отличчно, все поля заполнены. GetNews работат хорошо.
+        var responseString = await response.Content.ReadAsStringAsync();
+        var user = JsonConvert.DeserializeObject<UserModel>(responseString);
+        Assert.NotNull(user);
         Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType!.ToString());
     }
 }

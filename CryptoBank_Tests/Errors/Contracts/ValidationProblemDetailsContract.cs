@@ -3,24 +3,24 @@ namespace CryptoBank_Tests.Errors.Contracts;
 
 public class ValidationProblemDetailsContract
 {
-    public string Title { get; set; }
+    public required string Title { get; init; }
 
-    public string Type { get; set; }
+    public required string Type { get; init; }
 
-    public string Detail { get; set; }
+    public required string Detail { get; init; }
 
-    public int Status { get; set; }
+    public required int Status { get; init; }
 
-    public string TraceId { get; set; }
+    public required string TraceId { get; init; }
 
-    public ErrorDataContract[] Errors { get; set; }
+    public required ErrorDataContract[] Errors { get; init; }
 }
 
 public class ErrorDataContract
 {
-    public string Field { get; set; }
+    public required string Field { get; init; }
 
-    public string Message { get; set; }
+    public required string Message { get; init; }
 
-    public string Code { get; set; }
+    public required string Code { get; init; }
 }

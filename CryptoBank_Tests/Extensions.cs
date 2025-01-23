@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using System.Text.Json;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Features.Account.Domain;
 using CryptoBank_WebApi.Features.Auth.Configurations;
@@ -95,6 +94,38 @@ public static class Extensions
             });
             context.Accounts.Add(new Account
             {
+                Number = "f78d6b07-2d33-4443-91f1-d679a2b80b49",
+                Currency = "USD",
+                UserId = 2,
+                Amount = 1,
+                CreatedOn = DateTime.UtcNow
+            });
+            context.Accounts.Add(new Account
+            {
+                Number = "f78d6b07-2d33-4443-91f1-d679a2b80b48",
+                Currency = "USD",
+                UserId = 2,
+                Amount = 1,
+                CreatedOn = DateTime.UtcNow
+            });
+            context.Accounts.Add(new Account
+            {
+                Number = "f78d6b07-2d33-4443-91f1-d679a2b80b47",
+                Currency = "USD",
+                UserId = 2,
+                Amount = 1,
+                CreatedOn = DateTime.UtcNow
+            });
+            context.Accounts.Add(new Account
+            {
+                Number = "f78d6b07-2d33-4443-91f1-d679a2b80b46",
+                Currency = "USD",
+                UserId = 2,
+                Amount = 1,
+                CreatedOn = DateTime.UtcNow
+            });
+            context.Accounts.Add(new Account
+            {
                 Number = "7b6e4a4b-f0fe-4cea-8111-8cf504a7da8a",
                 Currency = "USD",
                 UserId = 1,
@@ -105,9 +136,6 @@ public static class Extensions
             return context;
         }
     }
-
-    public static async Task<T> DeserializeContent<T>(this HttpResponseMessage message) =>
-        await JsonSerializer.DeserializeAsync<T>(await message.Content.ReadAsStreamAsync().ConfigureAwait(false)).ConfigureAwait(false);
     
     public static string GetJwtToken(this IServiceScope scope, string email, string role)
     {

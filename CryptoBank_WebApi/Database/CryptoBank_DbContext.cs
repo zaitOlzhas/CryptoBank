@@ -1,7 +1,6 @@
 using CryptoBank_WebApi.Features.Account.Domain;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.News.Domain;
-using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoBank_WebApi.Database;

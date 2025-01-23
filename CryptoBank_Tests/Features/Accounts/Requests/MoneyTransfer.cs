@@ -6,6 +6,8 @@ using CryptoBank_Tests.Errors.Contracts;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace CryptoBank_Tests.Features.Accounts.Requests;
 
@@ -109,11 +111,8 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
 
         // Assert
         var content = await httpResponse.Content.ReadAsStringAsync();
-        var contract = JsonSerializer.Deserialize<ValidationProblemDetailsContract>(content, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        });
-
+        var contract = JsonConvert.DeserializeObject<ValidationProblemDetailsContract>(content);
+        
         httpResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         httpResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/problem+json");
 
