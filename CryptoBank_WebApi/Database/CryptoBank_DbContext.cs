@@ -52,7 +52,6 @@ public class CryptoBank_DbContext : DbContext
             account.HasKey(x => x.Number);
             account.Property(x => x.Number)
                 .HasMaxLength(36)
-                .HasDefaultValueSql("gen_random_uuid()")
                 .ValueGeneratedOnAdd();
 
             account.Property(x => x.Currency)

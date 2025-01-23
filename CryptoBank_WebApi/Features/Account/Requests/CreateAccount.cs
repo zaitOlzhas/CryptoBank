@@ -65,6 +65,7 @@ public class CreateAccount
 
             var account = new Domain.Account()
             {
+                Number = Guid.NewGuid().ToString(),
                 Currency = "USD",
                 UserId = user.Id
             };
