@@ -10,7 +10,7 @@ namespace CryptoBank_Tests.Features.Accounts.Requests;
 public class GetUserAccounts(CustomWebApplicationFactory<Program> factory): IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_get_user_accounts()
+    public async Task GetUserAccount_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -29,7 +29,6 @@ public class GetUserAccounts(CustomWebApplicationFactory<Program> factory): ICla
         response.EnsureSuccessStatusCode(); 
         Assert.NotNull(accounts);
         Assert.Equal(5, accounts.Length);
-        //TODO: Найти причину почему не десериализуется. Объект приходит отличчно, все поля заполнены. GetNews работат хорошо.
         Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType!.ToString());
     }
 }

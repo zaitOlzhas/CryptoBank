@@ -12,7 +12,7 @@ public class SignUp(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_signup_action()
+    public async Task SignUp_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -33,7 +33,7 @@ public class SignUp(CustomWebApplicationFactory<Program> factory)
         user.Should().NotBeNull();
     }
     [Fact]
-    public async Task Should_be_failed_email_exist_validation()
+    public async Task SignUp_ShouldFail_WhenEmailAlreadyExists()
     {
         // Arrange
         var client = factory.CreateClient();

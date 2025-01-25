@@ -18,7 +18,7 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_money_transfer()
+    public async Task MoneyTransfer_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -61,7 +61,7 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
     }
 
     [Fact]
-    public async Task Should_be_only_one_source_account_not_found_validation_error()
+    public async Task MoneyTransfer_ShouldReturnValidationError_WhenSourceAccountNotFound()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -106,7 +106,7 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
     }
 
     [Fact]
-    public async Task Should_be_two_account_not_found_validation_error()
+    public async Task MoneyTransfer_ShouldReturnValidationError_WhenBothAccountsNotFound()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();

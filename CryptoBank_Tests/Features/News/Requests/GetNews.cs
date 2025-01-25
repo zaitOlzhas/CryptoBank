@@ -7,7 +7,7 @@ namespace CryptoBank_Tests.Features.News.Requests;
 public class GetNews(CustomWebApplicationFactory<Program> factory) : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_get_news()
+    public async Task GetNews_ShouldBeSuccessful()
     {
         // Arrange
         var client = factory.CreateClient();
@@ -25,7 +25,7 @@ public class GetNews(CustomWebApplicationFactory<Program> factory) : IClassFixtu
     }
     
     [Fact]
-    public async Task Should_be_failed_get_news_forbidden()
+    public async Task GetNews_ShouldFail_WhenForbidden()
     {
         // Arrange
         var client = factory.CreateClient();

@@ -13,7 +13,7 @@ public class SetUserRole(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_user_role_change()
+    public async Task SetUserRole_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -39,7 +39,7 @@ public class SetUserRole(CustomWebApplicationFactory<Program> factory)
     }
     
     [Fact]
-    public async Task Should_be_failed_user_role_change_forbidden()
+    public async Task SetUserRole_ShouldFail_WhenForbidden()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();

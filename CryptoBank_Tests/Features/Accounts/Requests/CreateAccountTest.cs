@@ -15,7 +15,7 @@ public class CreateAccountTest(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_create_account()
+    public async Task CreateAccount_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -36,7 +36,7 @@ public class CreateAccountTest(CustomWebApplicationFactory<Program> factory)
         Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType!.ToString());
     }
     [Fact]
-    public async Task Should_be_failed_create_account_with_limit_logic_conflict()
+    public async Task CreateAccount_ShouldFail_WhenAccountLimitIsReached()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();

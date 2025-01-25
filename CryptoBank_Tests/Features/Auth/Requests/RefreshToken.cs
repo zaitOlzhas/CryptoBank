@@ -22,7 +22,7 @@ public class RefreshToken(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_refresh_token()
+    public async Task RefreshToken_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -78,7 +78,7 @@ public class RefreshToken(CustomWebApplicationFactory<Program> factory)
         email.Should().Be(authObject.Email);
     }
     [Fact]
-    public async Task Should_be_refresh_token_validation_error_missing_refresh_token()
+    public async Task RefreshToken_ShouldReturnValidationError_WhenRefreshTokenIsMissing()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -116,7 +116,7 @@ public class RefreshToken(CustomWebApplicationFactory<Program> factory)
     }
     
     [Fact]
-    public async Task Should_be_refresh_token_validation_error_empty_email_claim()
+    public async Task RefreshToken_ShouldReturnValidationError_WhenEmailClaimIsEmpty()
     {
         // Arrange
         var authObject = new 
@@ -147,7 +147,7 @@ public class RefreshToken(CustomWebApplicationFactory<Program> factory)
         error.Code.Should().Be("refresh_token_validation_email_empty");
     }
     [Fact]
-    public async Task Should_be_refresh_token_validation_error_wrong_refresh_token()
+    public async Task RefreshToken_ShouldReturnValidationError_WhenRefreshTokenIsInvalid()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();

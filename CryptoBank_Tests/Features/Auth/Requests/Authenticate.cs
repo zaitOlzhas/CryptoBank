@@ -18,7 +18,7 @@ public class Authenticate(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_authentication()
+    public async Task Authenticate_ShouldBeSuccessful()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
@@ -60,7 +60,7 @@ public class Authenticate(CustomWebApplicationFactory<Program> factory)
         email.Should().Be(authObject.Email);
     }
     [Fact]
-    public async Task Should_be_failed_authentication_with_user_not_found_validation_error()
+    public async Task Authenticate_ShouldFail_WhenUserNotFound()
     {
         // Arrange
         var client = factory.CreateClient();
