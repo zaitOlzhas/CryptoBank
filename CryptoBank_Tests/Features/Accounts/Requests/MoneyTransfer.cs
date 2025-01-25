@@ -3,6 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using CryptoBank_Tests.Errors.Contracts;
+using CryptoBank_WebApi.Database;
+using CryptoBank_WebApi.Features.Auth.Common;
+using CryptoBank_WebApi.Features.Auth.Domain;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,25 +23,41 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
        
-        var jwt = scope.GetJwtToken("user1@admin.com", "user");
-
+        var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
+        var jwt = tokenGenerator.GenerateJwt("user1@admin.com", new [] { UserRole.User });
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-
+       
+        var sourceAccount = new 
+        {
+            Number = "7b6e4a4b-f0fe-4cea-8111-8cf504a7da83",
+            Amount = 98
+        };
+        var destinationAccount = new 
+        {
+            Number = "7b6e4a4b-f0fe-4cea-8111-8cf504a7da84",
+            Amount = 1,
+        };
         var amount = 12;
 
         // Act
         var httpResponse = await client.PostAsJsonAsync("/money-transfer", new
         {
-            SourceAccountNumber = "7b6e4a4b-f0fe-4cea-8111-8cf504a7da8a",
-            DestinationAccountNumber = "f78d6b07-2d33-4443-91f1-d679a2b80b43",
+            SourceAccountNumber = sourceAccount.Number,
+            DestinationAccountNumber = destinationAccount.Number,
             Amount = amount
         });
 
         // Assert
         httpResponse.EnsureSuccessStatusCode();
-        //var resultAccount = db.Accounts.Where(x => x.Number == sourceAccount.Number).SingleOrDefault();
-        //resultAccount.Amount.Should().Be(sourceAccount.Amount - amount);
+        var db2 = scope.ServiceProvider.GetRequiredService<CryptoBank_DbContext>();
+        var moneyTransaction = db2.MoneyTransactions.Where(x=>x.SourceAccount==sourceAccount.Number && x.DestinationAccount== destinationAccount.Number).OrderByDescending(a=>a.CreatedOn).SingleOrDefault();
+        moneyTransaction.Should().NotBeNull();
+        moneyTransaction.Amount.Should().Be(amount);
+        var sourceAccountResult = db2.Accounts.SingleOrDefault(x => x.Number == sourceAccount.Number);
+        var destinationAccountResult = db2.Accounts.SingleOrDefault(x => x.Number == destinationAccount.Number);
+        sourceAccountResult!.Amount.Should().Be(sourceAccount.Amount - amount);
+        destinationAccountResult!.Amount.Should().Be(destinationAccount.Amount + amount);
     }
 
     [Fact]
@@ -47,8 +66,8 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
         
-        var jwt = scope.GetJwtToken("user1@admin.com", "user");
-
+        var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
+        var jwt = tokenGenerator.GenerateJwt("user1@admin.com", new [] { UserRole.User });
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
         var destinationAccount = "f78d6b07-2d33-4443-91f1-d679a2b80b43";
@@ -92,8 +111,8 @@ public class MoneyTransfer(CustomWebApplicationFactory<Program> factory)
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
        
-        var jwt = scope.GetJwtToken("user1@admin.com", "user");
-
+        var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
+        var jwt = tokenGenerator.GenerateJwt("user1@admin.com", new [] { UserRole.User });
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
 

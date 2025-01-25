@@ -1,33 +1,34 @@
 using System.Net.Http.Headers;
 using CryptoBank_WebApi.Features.Auth.Common;
 using CryptoBank_WebApi.Features.Auth.Domain;
-using CryptoBank_WebApi.Features.Auth.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
-namespace CryptoBank_Tests.Features.User.Requests;
+namespace CryptoBank_Tests.Features.Accounts.Requests;
 
-public class GetUserProfile(CustomWebApplicationFactory<Program> factory)
+public class GetAccountReport(CustomWebApplicationFactory<Program> factory)
     : IClassFixture<CustomWebApplicationFactory<Program>>
 {
     [Fact]
-    public async Task Should_be_successful_get_user_profile()
+    public async Task Should_be_successfull_report()
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
         var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
-        var jwt = tokenGenerator.GenerateJwt("user1@admin.com", [UserRole.User]);
+        var jwt = tokenGenerator.GenerateJwt("analyst@admin.com", new [] { UserRole.Analyst });
+        
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
-        
+
         // Act
-        var response = await client.GetAsync("/user-profile");
+        var response = await client.GetAsync($"/accounts-report?StartDate={DateTime.UtcNow.AddMonths(-3).ToShortDateString()}&EndDate={DateTime.UtcNow.ToShortDateString()}");
 
         // Assert
         response.EnsureSuccessStatusCode(); // Status Code 200-299
         var responseString = await response.Content.ReadAsStringAsync();
-        var user = JsonConvert.DeserializeObject<UserModel>(responseString);
-        Assert.NotNull(user);
+        var reportRecords = JsonConvert.DeserializeObject<string[]>(responseString);
+        Assert.NotNull(reportRecords);
+        Assert.Equal(3, reportRecords.Length);
         Assert.Equal("application/json; charset=utf-8", response.Content.Headers.ContentType!.ToString());
     }
 }

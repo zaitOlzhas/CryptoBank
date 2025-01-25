@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using CryptoBank_Tests.Errors.Contracts;
 using CryptoBank_WebApi.Features.Account.Model;
+using CryptoBank_WebApi.Features.Auth.Common;
+using CryptoBank_WebApi.Features.Auth.Domain;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +19,8 @@ public class CreateAccountTest(CustomWebApplicationFactory<Program> factory)
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
-        var jwt = scope.GetJwtToken("user1@admin.com", "user");
+        var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
+        var jwt = tokenGenerator.GenerateJwt("user1@admin.com", new [] { UserRole.User });
         
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
@@ -37,7 +40,8 @@ public class CreateAccountTest(CustomWebApplicationFactory<Program> factory)
     {
         // Arrange
         var scope = factory.Services.CreateAsyncScope();
-        var jwt = scope.GetJwtToken("user2@admin.com", "user");
+        var tokenGenerator = scope.ServiceProvider.GetRequiredService<TokenGenerator>();
+        var jwt = tokenGenerator.GenerateJwt("user2@admin.com", new [] { UserRole.User });
         
         var client = factory.CreateClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
