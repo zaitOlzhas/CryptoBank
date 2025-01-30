@@ -93,7 +93,7 @@ public class Authenticate
             if (user is null)
                 throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","authenticate_user_email_not_found");
             
-            if (!_paswordHasher.VerifyHashedPassword(user!.Password, request.Password))
+            if (!_paswordHasher.VerifyHashedPassword(user.Password, request.Password))
                 throw new Exception("Invalid credentials");
 
             var jwt = user switch

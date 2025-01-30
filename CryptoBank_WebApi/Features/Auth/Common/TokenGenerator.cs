@@ -24,7 +24,7 @@ public class TokenGenerator
 
     public async Task<UserRefreshToken> GenerateRefreshToken(int userId, CancellationToken cancellationToken)
     {
-        var refreshToken = "";
+        string refreshToken;
         using var rng = RandomNumberGenerator.Create();
 
         var randomNumber = new byte[32];

@@ -57,7 +57,7 @@ public class CreateAccount
                 throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","create_account_validation_user_not_found");
 
             var userAccountsCount = await dbContext.Accounts
-                .Where(x => x.UserId == user!.Id)
+                .Where(x => x.UserId == user.Id)
                 .CountAsync(cancellationToken);
 
             if (userAccountsCount >= authConfigs.Value.AccountLimitPerUser)
@@ -65,8 +65,9 @@ public class CreateAccount
 
             var account = new Domain.Account()
             {
+                Number = Guid.NewGuid().ToString(),
                 Currency = "USD",
-                UserId = user!.Id
+                UserId = user.Id
             };
 
             var newAccount = await dbContext.Accounts.AddAsync(account, cancellationToken);

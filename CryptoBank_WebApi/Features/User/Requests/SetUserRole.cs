@@ -40,7 +40,7 @@ public class SetUserRole
             if (user is null)
                 throw new ValidationErrorsException(nameof(request.UserId), "User not found by given Id.","set_user_role_validation_user_not_found");
 
-            user!.Role = request.Role;
+            user.Role = request.Role;
 
             await dbContext.SaveChangesAsync(cancellationToken);
 

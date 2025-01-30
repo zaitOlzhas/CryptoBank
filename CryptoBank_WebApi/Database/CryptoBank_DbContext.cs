@@ -1,7 +1,6 @@
 using CryptoBank_WebApi.Features.Account.Domain;
 using CryptoBank_WebApi.Features.Auth.Domain;
 using CryptoBank_WebApi.Features.News.Domain;
-using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 
 namespace CryptoBank_WebApi.Database;
@@ -53,7 +52,6 @@ public class CryptoBank_DbContext : DbContext
             account.HasKey(x => x.Number);
             account.Property(x => x.Number)
                 .HasMaxLength(36)
-                .HasDefaultValueSql("gen_random_uuid()")
                 .ValueGeneratedOnAdd();
 
             account.Property(x => x.Currency)

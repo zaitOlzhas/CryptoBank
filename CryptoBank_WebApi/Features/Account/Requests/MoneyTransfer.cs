@@ -80,7 +80,7 @@ public class MoneyTransfer
 
             var sourceAccount = await dbContext.Accounts.FindAsync(request.SourceAccountNumber, cancellationToken);
 
-            if (sourceAccount!.UserId != user!.Id)
+            if (sourceAccount!.UserId != user.Id)
                 throw new Exception("You are not the owner of the source account");
 
             var destinationAccount =

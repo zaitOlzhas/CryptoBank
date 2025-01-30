@@ -1,11 +1,8 @@
 using System.Security.Claims;
-using CryptoBank_WebApi.Authorization;
 using CryptoBank_WebApi.Common.Extensions;
 using CryptoBank_WebApi.Database;
 using CryptoBank_WebApi.Errors.Exceptions;
 using CryptoBank_WebApi.Features.Account.Model;
-using CryptoBank_WebApi.Features.News.Models;
-using CryptoBank_WebApi.Features.News.Requests;
 using CryptoBank_WebApi.Validation;
 using FastEndpoints;
 using FluentValidation;
@@ -56,7 +53,7 @@ public class GetUserAccounts
                 throw new ValidationErrorsException(nameof(request.Email), "User not found by given email.","get_user_accounts_validation_user_not_found");
 
             var userAccounts = await dbContext.Accounts
-                .Where(x => x.UserId == user!.Id)
+                .Where(x => x.UserId == user.Id)
                 .Select(x => new AccountModel
                 {
                     Number = x.Number,

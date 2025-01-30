@@ -1,9 +1,6 @@
-using System.Diagnostics;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using CryptoBank_WebApi.Errors.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CryptoBank_WebApi.Errors.Extensions;
 
