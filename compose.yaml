@@ -1,0 +1,16 @@
+﻿services:
+  cryptobank_webapi:
+    image: zaitolzhas/cryptobank_api:latest
+    build:
+      context: ./CryptoBank_WebApi/
+      dockerfile: ./Dockerfile
+      args:
+        BUILD_CONFIGURATION: Release
+    environment:
+      ASPNETCORE_URLS: http://*:5055
+      ASPNETCORE_ENVIRONMENT: Production
+    ports:
+      - "5055:5055"
+      - "8081:8081"
+    volumes:
+      - .:/src

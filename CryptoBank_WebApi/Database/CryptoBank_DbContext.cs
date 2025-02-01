@@ -15,6 +15,7 @@ public class CryptoBank_DbContext : DbContext
 
     public CryptoBank_DbContext(DbContextOptions<CryptoBank_DbContext> options) : base(options)
     {
+        Database.EnsureCreated();
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
