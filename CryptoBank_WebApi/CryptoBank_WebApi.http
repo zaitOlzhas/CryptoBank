@@ -43,7 +43,7 @@ POST {{CryptoBank_WebApi_HostAddress}}/auth/
 Content-Type: application/json
 
 {
-  "Email": "user3@admin.com",
+  "Email": "admin@admin.com",
   "Password": "123"
 }
 

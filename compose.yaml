@@ -1,16 +1,34 @@
 ﻿services:
+  db:
+    image: postgres:latest
+    container_name: my_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: ozait
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: CryptoBank
+    ports:
+      - "5433:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      
   cryptobank_webapi:
-    image: zaitolzhas/cryptobank_api:latest
+    image: zaitolzhas/cryptobank-api:latest
     build:
       context: ./CryptoBank_WebApi/
       dockerfile: ./Dockerfile
       args:
         BUILD_CONFIGURATION: Release
     environment:
-      ASPNETCORE_URLS: http://*:5055
+      ASPNETCORE_URLS: http://*:8080
       ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__CryptoBank_DbContext: "Host=db;Port=5432;Database=CryptoBank;Username=ozait;Password=password"
     ports:
-      - "5055:5055"
+      - "8080:8080"
       - "8081:8081"
     volumes:
       - .:/src
+    depends_on:
+      - db
+volumes:
+  pg_data:
